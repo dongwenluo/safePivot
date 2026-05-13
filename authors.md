@@ -7,7 +7,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/dongwenluo/safePivot/blob/HEAD/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/dongwenluo/safePivot/blob/main/DESCRIPTION)
 
 Luo D (2026). *safePivot: What the Package Does (One Line, Title Case)*.
 R package version 0.1.0, <https://dongwenluo.github.io/safePivot/>.
