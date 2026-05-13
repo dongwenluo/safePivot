@@ -17,8 +17,11 @@ Imports:
     rlang,
     tidyr
 Suggests: 
+    knitr,
+    rmarkdown,
     shiny,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 URL: https://dongwenluo.github.io/safePivot/, https://github.com/dongwenluo/safePivot
 BugReports: https://github.com/dongwenluo/safePivot/issues
+VignetteBuilder: knitr
