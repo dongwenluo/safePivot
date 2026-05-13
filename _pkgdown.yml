@@ -1,26 +1,4 @@
 url: https://dongwenluo.github.io/safePivot/
-
 template:
   bootstrap: 5
-  bootswatch: flatly
 
-navbar:
-  structure:
-    left: [intro, reference, articles, news]
-    right: [search, github]
-
-reference:
-  - title: Widget
-    contents:
-      - safePivot
-      - safePivotOutput
-      - renderSafePivot
-
-  - title: Compute and export
-    contents:
-      - safe_pivot_compute
-      - safe_pivot_compute_from_config
-      - safe_pivot_write_csv
-      - safe_pivot_write_xlsx
-      - safe_pivot_write_rds
-      - safe_pivot_write_rdata
