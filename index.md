@@ -1,0 +1,180 @@
+# safePivot
+
+`safePivot` is an R htmlwidget for interactive drag-and-drop pivot
+tables.
+
+It wraps the original PivotTable.js library with safer defaults for data
+analysis:
+
+- robust numeric aggregators
+- missing-value handling
+- R factor-level ordering
+- heatmap renderers
+- readable conditional formatting
+- Shiny config capture
+- CSV, Excel, RDS, and RData export helpers
+
+## Installation
+
+``` r
+
+# Development version
+# remotes::install_github("your-github-user/safePivot")
+```
+
+## Basic use
+
+``` r
+
+library(safePivot)
+
+safePivot(
+  iris,
+  rows = "Species",
+  vals = "Sepal.Length",
+  aggregator = "Median",
+  renderer = "Table"
+)
+```
+
+## Heatmap
+
+``` r
+
+safePivot(
+  mtcars,
+  rows = "cyl",
+  cols = "gear",
+  vals = "mpg",
+  aggregator = "Mean",
+  renderer = "Heatmap",
+  heatmap_palette = "blue",
+  conditional_format = TRUE
+)
+```
+
+## Factor order
+
+``` r
+
+iris2 <- iris
+iris2$Species <- factor(
+  iris2$Species,
+  levels = c("virginica", "versicolor", "setosa")
+)
+
+safePivot(
+  iris2,
+  rows = "Species",
+  vals = "Sepal.Length",
+  aggregator = "Median",
+  renderer = "Table",
+  respect_factor_order = TRUE
+)
+```
+
+## Missing values
+
+``` r
+
+iris_missing <- iris
+iris_missing$Group <- iris_missing$Species
+iris_missing$Group[c(1, 5, 10)] <- NA
+iris_missing$Sepal.Length[c(2, 6, 11)] <- NA
+
+safePivot(
+  iris_missing,
+  rows = "Group",
+  vals = "Sepal.Length",
+  aggregator = "N missing",
+  renderer = "Table",
+  missing_label = "(Missing)"
+)
+```
+
+## Shiny export pattern
+
+``` r
+
+library(shiny)
+library(safePivot)
+
+ui <- fluidPage(
+  safePivotOutput("pivot", height = "600px"),
+  downloadButton("download_csv", "Download CSV"),
+  downloadButton("download_xlsx", "Download Excel")
+)
+
+server <- function(input, output, session) {
+  dat <- reactive(iris)
+
+  output$pivot <- renderSafePivot({
+    safePivot(
+      dat(),
+      rows = "Species",
+      vals = "Sepal.Length",
+      aggregator = "Median",
+      renderer = "Table"
+    )
+  })
+
+  current_pivot <- reactive({
+    safe_pivot_compute_from_config(
+      data = dat(),
+      config = input$pivot_config,
+      default_rows = "Species",
+      default_vals = "Sepal.Length",
+      default_aggregator = "Median"
+    )
+  })
+
+  output$download_csv <- downloadHandler(
+    filename = function() "safePivot_result.csv",
+    content = function(file) {
+      safe_pivot_write_csv(current_pivot(), file, which = "wide")
+    }
+  )
+
+  output$download_xlsx <- downloadHandler(
+    filename = function() "safePivot_result.xlsx",
+    content = function(file) {
+      safe_pivot_write_xlsx(current_pivot(), file)
+    }
+  )
+}
+
+shinyApp(ui, server)
+```
+
+## Aggregators
+
+Common aggregators include:
+
+``` R
+##              Type                                            Examples
+## 1           Count             Count, Count unique, List unique values
+## 2     Missingness  N missing, N non-missing, Missing %, Non-missing %
+## 3 Numeric summary                  Sum, Mean, Median, Min, Max, Range
+## 4    Distribution                 Q1, Q3, IQR, Variance, SD, SE, CV %
+## 5        Fraction Sum as Fraction of Total, Count as Fraction of Rows
+```
+
+## Notes
+
+`safePivot` is designed for interactive exploration. For very large
+data, pre-filter or aggregate data before sending it to the browser.
+
+## Related work and acknowledgements
+
+`safePivot` is inspired by `rpivotTable`, an R htmlwidget that brings
+PivotTable.js / pivottable.js drag-and-drop pivot tables to R.
+
+`safePivot` takes a more focused and conservative direction: it keeps
+the drag-and-drop table workflow, but removes chart renderers and adds
+extra safeguards for numeric aggregation, missing values, factor-level
+ordering, readable heatmaps, Shiny config capture, and R-side
+CSV/Excel/RDS/RData export.
+
+We also acknowledge PivotTable.js by Nicolas Kruchten, the underlying
+JavaScript pivot-table library used for the interactive browser-side
+pivot UI.
