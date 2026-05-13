@@ -1,5 +1,8 @@
 # safePivot
 
+[![Codecov test
+coverage](https://codecov.io/gh/dongwenluo/safePivot/branch/main/graph/badge.svg)](https://app.codecov.io/gh/dongwenluo/safePivot?branch=main)
+
 `safePivot` is an R htmlwidget for interactive drag-and-drop pivot
 tables.
 
