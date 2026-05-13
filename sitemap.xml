@@ -1,9 +1,11 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://dongwenluo.github.io/safePivot/404.html</loc></url>
-<url><loc>https://dongwenluo.github.io/safePivot/LICENSE-text.html</loc></url>
-<url><loc>https://dongwenluo.github.io/safePivot/LICENSE.html</loc></url>
+<url><loc>https://dongwenluo.github.io/safePivot/articles/index.html</loc></url>
+<url><loc>https://dongwenluo.github.io/safePivot/articles/using-safePivot-in-shiny.html</loc></url>
 <url><loc>https://dongwenluo.github.io/safePivot/authors.html</loc></url>
 <url><loc>https://dongwenluo.github.io/safePivot/index.html</loc></url>
+<url><loc>https://dongwenluo.github.io/safePivot/LICENSE-text.html</loc></url>
+<url><loc>https://dongwenluo.github.io/safePivot/LICENSE.html</loc></url>
 <url><loc>https://dongwenluo.github.io/safePivot/news/index.html</loc></url>
 <url><loc>https://dongwenluo.github.io/safePivot/reference/index.html</loc></url>
 <url><loc>https://dongwenluo.github.io/safePivot/reference/renderSafePivot.html</loc></url>
