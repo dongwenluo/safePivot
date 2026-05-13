@@ -1,0 +1,8 @@
+^LICENSE\.md$
+^README\.Rmd$
+^^README\\.Rmd$$
+^^README_cache$$
+^^README_files$$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
