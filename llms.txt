@@ -19,7 +19,8 @@ analysis:
 ``` r
 
 # Development version
-# remotes::install_github("your-github-user/safePivot")
+install.packages("remotes")
+remotes::install_github("dongwenluo/safePivot")
 ```
 
 ## Basic use
