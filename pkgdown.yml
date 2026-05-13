@@ -3,7 +3,7 @@ pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   using-safePivot-in-shiny: using-safePivot-in-shiny.html
-last_built: 2026-05-13T04:02Z
+last_built: 2026-05-13T04:08Z
 urls:
   reference: https://dongwenluo.github.io/safePivot/reference
   article: https://dongwenluo.github.io/safePivot/articles
