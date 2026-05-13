@@ -1,4 +1,6 @@
 
+[![R-CMD-check](https://github.com/dongwenluo/safePivot/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/dongwenluo/safePivot/actions/workflows/R-CMD-check.yaml)
+
 # safePivot
 
 `safePivot` is an R htmlwidget for interactive drag-and-drop pivot
