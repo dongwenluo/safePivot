@@ -33,59 +33,56 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/dongwenluo/safePivot/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/dongwenluo/safePivot/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0.9000" id="safepivot-0109000">safePivot 0.1.0.9000<a class="anchor" aria-label="anchor" href="#safepivot-0109000"></a></h2>
+<div class="section level3">
+<h3 id="aggregators-0-1-0-9000">Aggregators<a class="anchor" aria-label="anchor" href="#aggregators-0-1-0-9000"></a></h3>
+<ul><li><p>Added explicit missing and non-missing aggregators, including within-cell, row, column, and total percentages.</p></li>
+<li><p>Added zero and non-zero aggregators, including within-cell, row, column, and total percentages.</p></li>
+<li><p>Clarified aggregation semantics: empty pivot cells are treated as no data and remain <code>NA</code>; observed <code>NA</code> values are counted as missing; numeric zero values are counted separately from missing values.</p></li>
+<li><p>Reworked <code>Sum as Fraction of Total</code>, <code>Sum as Fraction of Rows</code>, <code>Sum as Fraction of Columns</code>, <code>Count as Fraction of Total</code>, <code>Count as Fraction of Rows</code>, and <code>Count as Fraction of Columns</code> so that denominators are calculated from explicit cell, row, column, and total summaries.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="formatting-and-export-0-1-0-9000">Formatting and export<a class="anchor" aria-label="anchor" href="#formatting-and-export-0-1-0-9000"></a></h3>
+<ul><li><p>Added browser-side conditional formatting modes: <code>"none"</code>, <code>"value"</code>, <code>"data_quality"</code>, and <code>"both"</code>.</p></li>
+<li><p>Added styled Excel export for heatmap-style colouring, zero cells, empty cells, and high/low value highlighting.</p></li>
+<li><p>Added data-type badges for draggable variable names in the PivotTable.js UI, including numeric, integer, character, factor, ordered factor, Date, date-time, logical, list, and object types.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-0-1-0-9000">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-1-0-9000"></a></h3>
+<ul><li>Expanded README and Shiny vignette documentation for aggregation rules, config-based export, styled Excel export, conditional formatting, and data-type badges.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="tests-0-1-0-9000">Tests<a class="anchor" aria-label="anchor" href="#tests-0-1-0-9000"></a></h3>
+<ul><li>Added tests for sum fractions, count fractions, missing-value percentages, zero-value percentages, empty-cell behaviour, and XLSX export options.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="safepivot-010">safePivot 0.1.0<a class="anchor" aria-label="anchor" href="#safepivot-010"></a></h2>
 <div class="section level3">
 <h3 id="new-features-0-1-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-1-0"></a></h3>
-<ul><li>Added <code><a href="../reference/safePivot.html">safePivot()</a></code>, an htmlwidget wrapper around PivotTable.js for drag-and-drop pivot tables in R.</li>
-<li>Added Shiny support through <code><a href="../reference/safePivotOutput.html">safePivotOutput()</a></code> and <code><a href="../reference/renderSafePivot.html">renderSafePivot()</a></code>.</li>
-<li>Added robust R-side pivot computation with <code><a href="../reference/safe_pivot_compute.html">safe_pivot_compute()</a></code>.</li>
-<li>Added Shiny config-based export support with <code><a href="../reference/safe_pivot_compute_from_config.html">safe_pivot_compute_from_config()</a></code>.</li>
-<li>Added CSV, Excel, RDS, and RData export helpers.</li>
-<li>Added support for missing-value display and missingness aggregators.</li>
-<li>Added support for R factor-level ordering.</li>
-<li>Added row and column totals on/off options.</li>
-<li>Added readable heatmap palettes and conditional formatting.</li>
-<li>Added grey display for missing cells.</li>
-<li>Added package examples and README quick-start.</li>
-<li>Added pkgdown website.</li>
+<ul><li><p>Added <code><a href="../reference/safePivot.html">safePivot()</a></code>, an htmlwidget wrapper around PivotTable.js for drag-and-drop pivot tables in R.</p></li>
+<li><p>Added Shiny support through <code><a href="../reference/safePivotOutput.html">safePivotOutput()</a></code> and <code><a href="../reference/renderSafePivot.html">renderSafePivot()</a></code>.</p></li>
+<li><p>Added R-side pivot computation with <code><a href="../reference/safe_pivot_compute.html">safe_pivot_compute()</a></code>.</p></li>
+<li><p>Added Shiny config-based export support with <code><a href="../reference/safe_pivot_compute_from_config.html">safe_pivot_compute_from_config()</a></code>.</p></li>
+<li><p>Added CSV, Excel, RDS, and RData export helpers.</p></li>
+<li><p>Added support for missing-value display and missingness aggregators.</p></li>
+<li><p>Added support for R factor-level ordering.</p></li>
+<li><p>Added row and column totals on/off options.</p></li>
+<li><p>Added heatmap palettes and browser-side conditional formatting.</p></li>
+<li><p>Added package examples, README quick-start, and pkgdown website.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="aggregators-0-1-0">Aggregators<a class="anchor" aria-label="anchor" href="#aggregators-0-1-0"></a></h3>
-<ul><li><code>Count</code></li>
-<li><code>Count unique</code></li>
-<li><code>List unique values</code></li>
-<li><code>N non-missing</code></li>
-<li><code>N missing</code></li>
-<li><code>Non-missing %</code></li>
-<li><code>Missing %</code></li>
-<li><code>Sum</code></li>
-<li><code>Mean</code></li>
-<li><code>Median</code></li>
-<li><code>Min</code></li>
-<li><code>Max</code></li>
-<li><code>Range</code></li>
-<li><code>Q1</code></li>
-<li><code>Q3</code></li>
-<li><code>IQR</code></li>
-<li><code>Variance</code></li>
-<li><code>SD</code></li>
-<li><code>SE</code></li>
-<li><code>CV %</code></li>
-<li><code>Sum as Fraction of Total</code></li>
-<li><code>Sum as Fraction of Rows</code></li>
-<li><code>Sum as Fraction of Columns</code></li>
-<li><code>Count as Fraction of Total</code></li>
-<li><code>Count as Fraction of Rows</code></li>
-<li><code>Count as Fraction of Columns</code></li>
+<h3 id="initial-aggregators-0-1-0">Initial aggregators<a class="anchor" aria-label="anchor" href="#initial-aggregators-0-1-0"></a></h3>
+<ul><li>Added count, unique-value, missingness, numeric-summary, distribution, and fraction aggregators, including <code>Count</code>, <code>Count unique</code>, <code>List unique values</code>, <code>N non-missing</code>, <code>N missing</code>, <code>Sum</code>, <code>Mean</code>, <code>Median</code>, <code>Min</code>, <code>Max</code>, <code>Range</code>, <code>Q1</code>, <code>Q3</code>, <code>IQR</code>, <code>Variance</code>, <code>SD</code>, <code>SE</code>, <code>CV %</code>, <code>Sum as Fraction of Total</code>, <code>Sum as Fraction of Rows</code>, <code>Sum as Fraction of Columns</code>, <code>Count as Fraction of Total</code>, <code>Count as Fraction of Rows</code>, and <code>Count as Fraction of Columns</code>.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="related-work-0-1-0">Related work<a class="anchor" aria-label="anchor" href="#related-work-0-1-0"></a></h3>
-<ul><li>Acknowledges <code>rpivotTable</code> as related prior work for bringing PivotTable.js-style drag-and-drop pivot tables to R.</li>
-<li>Acknowledges PivotTable.js by Nicolas Kruchten as the JavaScript pivot-table library underlying the browser-side UI.</li>
+<ul><li><p>Acknowledges <code>rpivotTable</code> as related prior work for bringing PivotTable.js-style drag-and-drop pivot tables to R.</p></li>
+<li><p>Acknowledges PivotTable.js by Nicolas Kruchten as the JavaScript pivot-table library underlying the browser-side UI.</p></li>
 </ul></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -3,7 +3,7 @@
 with safer numeric aggregators, missing-value handling, factor-level
 ordering, heatmap renderers, conditional formatting, and Shiny support."><meta property="og:description" content="Create an interactive drag-and-drop pivot table using PivotTable.js,
 with safer numeric aggregators, missing-value handling, factor-level
-ordering, heatmap renderers, conditional formatting, and Shiny support."><!-- dependencies from examples --><script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script><script src="libs/safePivot-binding-0.1.0/safePivot.js"></script><link href="libs/jquery-ui-1.14.2/jquery-ui.min.css" rel="stylesheet"><script src="libs/jquery-ui-1.14.2/jquery-ui.min.js"></script><link href="libs/pivottable-2.23.0/pivot.min.css" rel="stylesheet"><script src="libs/pivottable-2.23.0/pivot.min.js"></script><link href="libs/safePivot-style-0.0.0.9000/safePivot.css" rel="stylesheet"></head><body>
+ordering, heatmap renderers, conditional formatting, and Shiny support."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -37,7 +37,7 @@ ordering, heatmap renderers, conditional formatting, and Shiny support."><!-- de
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Safe drag-and-drop pivot table htmlwidget</h1>
-      <small class="dont-index">Source: <a href="https://github.com/dongwenluo/safePivot/blob/HEAD/R/safePivot.R" class="external-link"><code>R/safePivot.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/dongwenluo/safePivot/blob/main/R/safePivot.R" class="external-link"><code>R/safePivot.R</code></a></small>
       <div class="d-none name"><code>safePivot.Rd</code></div>
     </div>
 
@@ -63,7 +63,9 @@ ordering, heatmap renderers, conditional formatting, and Shiny support.</p>
 <span>  show_row_totals <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_col_totals <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  heatmap_palette <span class="op">=</span> <span class="st">"blue"</span>,</span>
+<span>  show_type_badges <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  conditional_format <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  conditional_format_mode <span class="op">=</span> <span class="st">"both"</span>,</span>
 <span>  high_threshold <span class="op">=</span> <span class="fl">0.85</span>,</span>
 <span>  low_threshold <span class="op">=</span> <span class="fl">0.15</span>,</span>
 <span>  max_rows <span class="op">=</span> <span class="fl">50000</span>,</span>
@@ -130,9 +132,22 @@ ordering, heatmap renderers, conditional formatting, and Shiny support.</p>
 <code>"green"</code>, <code>"blue_white_red"</code>, or <code>"green_red"</code>.</p></dd>
 
 
+<dt id="arg-show-type-badges">show_type_badges<a class="anchor" aria-label="anchor" href="#arg-show-type-badges"></a></dt>
+<dd><p>Whether to show small data-type badges beside
+draggable variable names in the pivot UI.</p></dd>
+
+
 <dt id="arg-conditional-format">conditional_format<a class="anchor" aria-label="anchor" href="#arg-conditional-format"></a></dt>
-<dd><p>Whether to apply additional conditional formatting
-classes to numeric pivot cells.</p></dd>
+<dd><p>Whether to apply browser-side conditional
+formatting to pivot table cells.</p></dd>
+
+
+<dt id="arg-conditional-format-mode">conditional_format_mode<a class="anchor" aria-label="anchor" href="#arg-conditional-format-mode"></a></dt>
+<dd><p>Conditional formatting mode. One of
+<code>"none"</code>, <code>"value"</code>, <code>"data_quality"</code>, or <code>"both"</code>.
+<code>"none"</code> applies no extra formatting. <code>"value"</code> highlights high and
+low numeric values. <code>"data_quality"</code> highlights empty cells and zero
+values. <code>"both"</code> combines value and data-quality formatting.</p></dd>
 
 
 <dt id="arg-high-threshold">high_threshold<a class="anchor" aria-label="anchor" href="#arg-high-threshold"></a></dt>
@@ -173,8 +188,7 @@ Values are scaled from 0 to 1 within the displayed pivot table.</p></dd>
 <span class="r-in"><span>    renderer <span class="op">=</span> <span class="st">"Heatmap"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
-<div id="htmlwidget-ac96cb3ee4656e2e9ec3" style="width:100%;height:600px;" class="safePivot html-widget"></div>
-<script type="application/json" data-for="htmlwidget-ac96cb3ee4656e2e9ec3">{"x":{"data":{"Sepal.Length":[5.1,4.9,4.7,4.6,5,5.4,4.6,5,4.4,4.9,5.4,4.8,4.8,4.3,5.8,5.7,5.4,5.1,5.7,5.1,5.4,5.1,4.6,5.1,4.8,5,5,5.2,5.2,4.7,4.8,5.4,5.2,5.5,4.9,5,5.5,4.9,4.4,5.1,5,4.5,4.4,5,5.1,4.8,5.1,4.6,5.3,5,7,6.4,6.9,5.5,6.5,5.7,6.3,4.9,6.6,5.2,5,5.9,6,6.1,5.6,6.7,5.6,5.8,6.2,5.6,5.9,6.1,6.3,6.1,6.4,6.6,6.8,6.7,6,5.7,5.5,5.5,5.8,6,5.4,6,6.7,6.3,5.6,5.5,5.5,6.1,5.8,5,5.6,5.7,5.7,6.2,5.1,5.7,6.3,5.8,7.1,6.3,6.5,7.6,4.9,7.3,6.7,7.2,6.5,6.4,6.8,5.7,5.8,6.4,6.5,7.7,7.7,6,6.9,5.6,7.7,6.3,6.7,7.2,6.2,6.1,6.4,7.2,7.4,7.9,6.4,6.3,6.1,7.7,6.3,6.4,6,6.9,6.7,6.9,5.8,6.8,6.7,6.7,6.3,6.5,6.2,5.9],"Sepal.Width":[3.5,3,3.2,3.1,3.6,3.9,3.4,3.4,2.9,3.1,3.7,3.4,3,3,4,4.4,3.9,3.5,3.8,3.8,3.4,3.7,3.6,3.3,3.4,3,3.4,3.5,3.4,3.2,3.1,3.4,4.1,4.2,3.1,3.2,3.5,3.6,3,3.4,3.5,2.3,3.2,3.5,3.8,3,3.8,3.2,3.7,3.3,3.2,3.2,3.1,2.3,2.8,2.8,3.3,2.4,2.9,2.7,2,3,2.2,2.9,2.9,3.1,3,2.7,2.2,2.5,3.2,2.8,2.5,2.8,2.9,3,2.8,3,2.9,2.6,2.4,2.4,2.7,2.7,3,3.4,3.1,2.3,3,2.5,2.6,3,2.6,2.3,2.7,3,2.9,2.9,2.5,2.8,3.3,2.7,3,2.9,3,3,2.5,2.9,2.5,3.6,3.2,2.7,3,2.5,2.8,3.2,3,3.8,2.6,2.2,3.2,2.8,2.8,2.7,3.3,3.2,2.8,3,2.8,3,2.8,3.8,2.8,2.8,2.6,3,3.4,3.1,3,3.1,3.1,3.1,2.7,3.2,3.3,3,2.5,3,3.4,3],"Petal.Length":[1.4,1.4,1.3,1.5,1.4,1.7,1.4,1.5,1.4,1.5,1.5,1.6,1.4,1.1,1.2,1.5,1.3,1.4,1.7,1.5,1.7,1.5,1,1.7,1.9,1.6,1.6,1.5,1.4,1.6,1.6,1.5,1.5,1.4,1.5,1.2,1.3,1.4,1.3,1.5,1.3,1.3,1.3,1.6,1.9,1.4,1.6,1.4,1.5,1.4,4.7,4.5,4.9,4,4.6,4.5,4.7,3.3,4.6,3.9,3.5,4.2,4,4.7,3.6,4.4,4.5,4.1,4.5,3.9,4.8,4,4.9,4.7,4.3,4.4,4.8,5,4.5,3.5,3.8,3.7,3.9,5.1,4.5,4.5,4.7,4.4,4.1,4,4.4,4.6,4,3.3,4.2,4.2,4.2,4.3,3,4.1,6,5.1,5.9,5.6,5.8,6.6,4.5,6.3,5.8,6.1,5.1,5.3,5.5,5,5.1,5.3,5.5,6.7,6.9,5,5.7,4.9,6.7,4.9,5.7,6,4.8,4.9,5.6,5.8,6.1,6.4,5.6,5.1,5.6,6.1,5.6,5.5,4.8,5.4,5.6,5.1,5.1,5.9,5.7,5.2,5,5.2,5.4,5.1],"Petal.Width":[0.2,0.2,0.2,0.2,0.2,0.4,0.3,0.2,0.2,0.1,0.2,0.2,0.1,0.1,0.2,0.4,0.4,0.3,0.3,0.3,0.2,0.4,0.2,0.5,0.2,0.2,0.4,0.2,0.2,0.2,0.2,0.4,0.1,0.2,0.2,0.2,0.2,0.1,0.2,0.2,0.3,0.3,0.2,0.6,0.4,0.3,0.2,0.2,0.2,0.2,1.4,1.5,1.5,1.3,1.5,1.3,1.6,1,1.3,1.4,1,1.5,1,1.4,1.3,1.4,1.5,1,1.5,1.1,1.8,1.3,1.5,1.2,1.3,1.4,1.4,1.7,1.5,1,1.1,1,1.2,1.6,1.5,1.6,1.5,1.3,1.3,1.3,1.2,1.4,1.2,1,1.3,1.2,1.3,1.3,1.1,1.3,2.5,1.9,2.1,1.8,2.2,2.1,1.7,1.8,1.8,2.5,2,1.9,2.1,2,2.4,2.3,1.8,2.2,2.3,1.5,2.3,2,2,1.8,2.1,1.8,1.8,1.8,2.1,1.6,1.9,2,2.2,1.5,1.4,2.3,2.4,1.8,1.8,2.1,2.4,2.3,1.9,2.3,2.5,2.3,1.9,2,2.3,1.8],"Species":["setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","setosa","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","versicolor","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica","virginica"]},"rows":"Species","cols":[],"vals":"Sepal.Length","aggregator":"Median","renderer":"Heatmap","missing_label":"(Missing)","factor_levels":{"Species":["setosa","versicolor","virginica"]},"respect_factor_order":true,"numeric_digits":3,"show_row_totals":true,"show_col_totals":true,"heatmap_palette":"blue","conditional_format":true,"high_threshold":0.85,"low_threshold":0.15,"allowed_renderers":["Table","Heatmap","Row Heatmap","Col Heatmap"],"allowed_aggregators":["Count","Count unique","List unique values","N non-missing","N missing","Non-missing %","Missing %","Mean","Median","Sum","Sum as Fraction of Total","Sum as Fraction of Rows","Sum as Fraction of Columns","Count as Fraction of Total","Count as Fraction of Rows","Count as Fraction of Columns","Min","Max","Range","Variance","SD","SE","CV %","Q1","Q3","IQR"]},"evals":[],"jsHooks":[]}</script><span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

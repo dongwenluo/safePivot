@@ -18,7 +18,7 @@
 - [`safe_pivot_write_csv()`](https://dongwenluo.github.io/safePivot/reference/safe_pivot_write_csv.md)
   : Write pivot result to CSV
 - [`safe_pivot_write_xlsx()`](https://dongwenluo.github.io/safePivot/reference/safe_pivot_write_xlsx.md)
-  : Write pivot result to Excel
+  : Write a safePivot result to an Excel workbook
 - [`safe_pivot_write_rds()`](https://dongwenluo.github.io/safePivot/reference/safe_pivot_write_rds.md)
   : Write pivot result to RDS
 - [`safe_pivot_write_rdata()`](https://dongwenluo.github.io/safePivot/reference/safe_pivot_write_rdata.md)

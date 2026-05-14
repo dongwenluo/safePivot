@@ -59,18 +59,19 @@
       <h1>Using safePivot in Shiny</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/dongwenluo/safePivot/blob/HEAD/vignettes/using-safePivot-in-shiny.Rmd" class="external-link"><code>vignettes/using-safePivot-in-shiny.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/dongwenluo/safePivot/blob/main/vignettes/using-safePivot-in-shiny.Rmd" class="external-link"><code>vignettes/using-safePivot-in-shiny.Rmd</code></a></small>
       <div class="d-none name"><code>using-safePivot-in-shiny.Rmd</code></div>
     </div>
 
     
     
 <div class="section level2">
-<h2 id="using-safepivot-in-shiny">Using safePivot in Shiny<a class="anchor" aria-label="anchor" href="#using-safepivot-in-shiny"></a>
+<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
 <p><code>safePivot</code> provides a drag-and-drop pivot-table widget
-for Shiny applications.</p>
-<p>The main Shiny workflow is:</p>
+for Shiny applications. The browser-side widget is used for interaction,
+while R is used for reproducible computation and export.</p>
+<p>The recommended Shiny workflow is:</p>
 <ol style="list-style-type: decimal">
 <li>display the widget with <code><a href="../reference/safePivotOutput.html">safePivotOutput()</a></code>;</li>
 <li>render it with <code><a href="../reference/renderSafePivot.html">renderSafePivot()</a></code>;</li>
@@ -78,7 +79,8 @@ for Shiny applications.</p>
 <code>input$&lt;outputId&gt;_config</code>;</li>
 <li>recompute the current pivot result in R with
 <code><a href="../reference/safe_pivot_compute_from_config.html">safe_pivot_compute_from_config()</a></code>;</li>
-<li>export the result with CSV, Excel, RDS, or RData helpers.</li>
+<li>export the R-computed result with CSV, Excel, RDS, or RData
+helpers.</li>
 </ol>
 <p>This design avoids scraping the HTML table from the browser. Instead,
 the browser sends the pivot configuration back to Shiny, and R
@@ -93,7 +95,6 @@ recomputes the exported table from the original data.</p>
 <span></span>
 <span><span class="va">ui</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/fluidPage.html" class="external-link">fluidPage</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/titlePanel.html" class="external-link">titlePanel</a></span><span class="op">(</span><span class="st">"safePivot Shiny example"</span><span class="op">)</span>,</span>
-<span></span>
 <span>  <span class="fu"><a href="../reference/safePivotOutput.html">safePivotOutput</a></span><span class="op">(</span><span class="st">"pivot"</span>, height <span class="op">=</span> <span class="st">"650px"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -104,7 +105,8 @@ recomputes the exported table from the original data.</p>
 <span>      rows <span class="op">=</span> <span class="st">"Species"</span>,</span>
 <span>      vals <span class="op">=</span> <span class="st">"Sepal.Length"</span>,</span>
 <span>      aggregator <span class="op">=</span> <span class="st">"Median"</span>,</span>
-<span>      renderer <span class="op">=</span> <span class="st">"Table"</span></span>
+<span>      renderer <span class="op">=</span> <span class="st">"Table"</span>,</span>
+<span>      show_type_badges <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">}</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
@@ -112,17 +114,16 @@ recomputes the exported table from the original data.</p>
 <span><span class="fu"><a href="https://rdrr.io/pkg/shiny/man/shinyApp.html" class="external-link">shinyApp</a></span><span class="op">(</span><span class="va">ui</span>, <span class="va">server</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="heatmap-example">Heatmap example<a class="anchor" aria-label="anchor" href="#heatmap-example"></a>
+<h2 id="heatmap-and-conditional-formatting">Heatmap and conditional formatting<a class="anchor" aria-label="anchor" href="#heatmap-and-conditional-formatting"></a>
 </h2>
-<p><code>safePivot</code> supports heatmap renderers and readable colour
-palettes.</p>
+<p><code>safePivot</code> supports table and heatmap renderers, readable
+heatmap palettes, and browser-side conditional formatting.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://shiny.posit.co/" class="external-link">shiny</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dongwenluo.github.io/safePivot/">safePivot</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">ui</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/fluidPage.html" class="external-link">fluidPage</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/titlePanel.html" class="external-link">titlePanel</a></span><span class="op">(</span><span class="st">"safePivot heatmap example"</span><span class="op">)</span>,</span>
-<span></span>
 <span>  <span class="fu"><a href="../reference/safePivotOutput.html">safePivotOutput</a></span><span class="op">(</span><span class="st">"pivot"</span>, height <span class="op">=</span> <span class="st">"650px"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -135,8 +136,9 @@ palettes.</p>
 <span>      vals <span class="op">=</span> <span class="st">"mpg"</span>,</span>
 <span>      aggregator <span class="op">=</span> <span class="st">"Mean"</span>,</span>
 <span>      renderer <span class="op">=</span> <span class="st">"Heatmap"</span>,</span>
-<span>      heatmap_palette <span class="op">=</span> <span class="st">"blue"</span>,</span>
+<span>      heatmap_palette <span class="op">=</span> <span class="st">"blue_white_red"</span>,</span>
 <span>      conditional_format <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>      conditional_format_mode <span class="op">=</span> <span class="st">"both"</span>,</span>
 <span>      show_row_totals <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>      show_col_totals <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span>    <span class="op">)</span></span>
@@ -152,23 +154,53 @@ palettes.</p>
 <li><code>"blue_white_red"</code></li>
 <li><code>"green_red"</code></li>
 </ul>
-<p>The default <code>"blue"</code> palette is designed to keep black
-text readable.</p>
+<p>Available conditional formatting modes are:</p>
+<table class="table">
+<thead><tr class="header">
+<th>Mode</th>
+<th>Behaviour</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>"none"</code></td>
+<td>No extra conditional formatting</td>
+</tr>
+<tr class="even">
+<td><code>"value"</code></td>
+<td>Highlight high and low numeric values</td>
+</tr>
+<tr class="odd">
+<td><code>"data_quality"</code></td>
+<td>Highlight empty cells and zero cells</td>
+</tr>
+<tr class="even">
+<td><code>"both"</code></td>
+<td>Combine value and data-quality formatting</td>
+</tr>
+</tbody>
+</table>
+<p>The recommended visual priority is:</p>
+<pre class="text"><code>empty / unavailable cells &gt; zero cells &gt; heatmap or high-low value styling</code></pre>
 </div>
 <div class="section level2">
-<h2 id="export-current-pivot-table">Export current pivot table<a class="anchor" aria-label="anchor" href="#export-current-pivot-table"></a>
+<h2 id="export-the-current-pivot-table">Export the current pivot table<a class="anchor" aria-label="anchor" href="#export-the-current-pivot-table"></a>
 </h2>
 <p>The key helper for Shiny export is
 <code><a href="../reference/safe_pivot_compute_from_config.html">safe_pivot_compute_from_config()</a></code>.</p>
 <p>The widget sends the current drag-and-drop state to Shiny as:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">input</span><span class="op">$</span><span class="va">pivot_config</span></span></code></pre></div>
 <p>where <code>pivot</code> is the output ID used in:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/safePivotOutput.html">safePivotOutput</a></span><span class="op">(</span><span class="st">"pivot"</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="../reference/safe_pivot_compute_from_config.html">safe_pivot_compute_from_config()</a></code> also accepts default
+rows, columns, values, and aggregator settings. These defaults are
+important because <code>input$pivot_config</code> may be
+<code>NULL</code> before the widget sends its first configuration back
+to Shiny.</p>
 <p>The following app exports the current pivot result to CSV, Excel,
 RDS, and RData.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://shiny.posit.co/" class="external-link">shiny</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dongwenluo.github.io/safePivot/">safePivot</a></span><span class="op">)</span></span>
 <span></span>
@@ -203,7 +235,10 @@ RDS, and RData.</p>
 <span>      rows <span class="op">=</span> <span class="st">"Species"</span>,</span>
 <span>      vals <span class="op">=</span> <span class="st">"Sepal.Length"</span>,</span>
 <span>      aggregator <span class="op">=</span> <span class="st">"Median"</span>,</span>
-<span>      renderer <span class="op">=</span> <span class="st">"Table"</span></span>
+<span>      renderer <span class="op">=</span> <span class="st">"Table"</span>,</span>
+<span>      show_type_badges <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>      conditional_format <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>      conditional_format_mode <span class="op">=</span> <span class="st">"both"</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">}</span><span class="op">)</span></span>
 <span></span>
@@ -242,7 +277,11 @@ RDS, and RData.</p>
 <span>    content <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">file</span><span class="op">)</span> <span class="op">{</span></span>
 <span>      <span class="fu"><a href="../reference/safe_pivot_write_xlsx.html">safe_pivot_write_xlsx</a></span><span class="op">(</span></span>
 <span>        <span class="fu">current_pivot</span><span class="op">(</span><span class="op">)</span>,</span>
-<span>        <span class="va">file</span></span>
+<span>        <span class="va">file</span>,</span>
+<span>        include_heatmap <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>        include_conditional_format <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>        conditional_format_mode <span class="op">=</span> <span class="st">"both"</span>,</span>
+<span>        heatmap_palette <span class="op">=</span> <span class="st">"blue_white_red"</span></span>
 <span>      <span class="op">)</span></span>
 <span>    <span class="op">}</span></span>
 <span>  <span class="op">)</span></span>
@@ -292,10 +331,117 @@ the result in R.</p>
 </ul>
 </div>
 <div class="section level2">
+<h2 id="export-consistency">Export consistency<a class="anchor" aria-label="anchor" href="#export-consistency"></a>
+</h2>
+<p>The interactive browser table and the R-side export engine use the
+same aggregator names. This means a user can change the pivot table in
+the browser and then export the current result through
+<code><a href="../reference/safe_pivot_compute_from_config.html">safe_pivot_compute_from_config()</a></code>.</p>
+<p><code>safePivot</code> distinguishes:</p>
+<pre class="text"><code>empty pivot cell  = no records exist for that row-column combination
+observed missing  = a record exists, but the selected value is NA
+observed zero     = a record exists and the selected numeric value is 0</code></pre>
+<p>For example:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">quality_dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  row <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"A"</span>, <span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"B"</span>, <span class="st">"C"</span><span class="op">)</span>,</span>
+<span>  col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"X"</span>, <span class="st">"X"</span>, <span class="st">"Y"</span>, <span class="st">"X"</span>, <span class="st">"Y"</span>, <span class="st">"X"</span><span class="op">)</span>,</span>
+<span>  y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="cn">NA</span>, <span class="fl">0</span>, <span class="fl">5</span>, <span class="cn">NA</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/safe_pivot_compute.html">safe_pivot_compute</a></span><span class="op">(</span></span>
+<span>  <span class="va">quality_dat</span>,</span>
+<span>  rows <span class="op">=</span> <span class="st">"row"</span>,</span>
+<span>  cols <span class="op">=</span> <span class="st">"col"</span>,</span>
+<span>  vals <span class="op">=</span> <span class="st">"y"</span>,</span>
+<span>  aggregator <span class="op">=</span> <span class="st">"N missing"</span></span>
+<span><span class="op">)</span><span class="op">$</span><span class="va">wide</span></span></code></pre></div>
+<p>In this example:</p>
+<pre class="text"><code>A × Y has one observed missing value, so N missing = 1.
+C × X has one observed missing value, so N missing = 1.
+C × Y has no records, so it remains NA.</code></pre>
+<p>Zero percentages use numeric non-missing values as the
+denominator:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/safe_pivot_compute.html">safe_pivot_compute</a></span><span class="op">(</span></span>
+<span>  <span class="va">quality_dat</span>,</span>
+<span>  rows <span class="op">=</span> <span class="st">"row"</span>,</span>
+<span>  cols <span class="op">=</span> <span class="st">"col"</span>,</span>
+<span>  vals <span class="op">=</span> <span class="st">"y"</span>,</span>
+<span>  aggregator <span class="op">=</span> <span class="st">"Zero % within Cell"</span></span>
+<span><span class="op">)</span><span class="op">$</span><span class="va">wide</span></span></code></pre></div>
+<p>So:</p>
+<pre class="text"><code>A × X has values 0 and 1, so Zero % within Cell = 50.
+A × Y has only NA, so Zero % within Cell = NA.
+C × X has only NA, so Zero % within Cell = NA.
+C × Y has no records, so it remains NA.</code></pre>
+</div>
+<div class="section level2">
+<h2 id="styled-excel-export">Styled Excel export<a class="anchor" aria-label="anchor" href="#styled-excel-export"></a>
+</h2>
+<p>Excel export can preserve safePivot-style visual cues.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/safe_pivot_compute.html">safe_pivot_compute</a></span><span class="op">(</span></span>
+<span>  <span class="va">quality_dat</span>,</span>
+<span>  rows <span class="op">=</span> <span class="st">"row"</span>,</span>
+<span>  cols <span class="op">=</span> <span class="st">"col"</span>,</span>
+<span>  vals <span class="op">=</span> <span class="st">"y"</span>,</span>
+<span>  aggregator <span class="op">=</span> <span class="st">"Sum"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/safe_pivot_write_xlsx.html">safe_pivot_write_xlsx</a></span><span class="op">(</span></span>
+<span>  <span class="va">res</span>,</span>
+<span>  file <span class="op">=</span> <span class="st">"safePivot-export.xlsx"</span>,</span>
+<span>  include_heatmap <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  include_conditional_format <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  conditional_format_mode <span class="op">=</span> <span class="st">"both"</span>,</span>
+<span>  heatmap_palette <span class="op">=</span> <span class="st">"blue_white_red"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>The recommended priority is:</p>
+<pre class="text"><code>empty / unavailable cells &gt; zero cells &gt; heatmap or high-low value styling</code></pre>
+</div>
+<div class="section level2">
+<h2 id="variable-type-badges">Variable type badges<a class="anchor" aria-label="anchor" href="#variable-type-badges"></a>
+</h2>
+<p><code>safePivot</code> can show data-type badges beside draggable
+variable names.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">badge_dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  id <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
+<span>  score <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.2</span>, <span class="fl">3.4</span>, <span class="fl">5.6</span><span class="op">)</span>,</span>
+<span>  group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"A"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  ordered_group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"low"</span>, <span class="st">"medium"</span>, <span class="st">"high"</span><span class="op">)</span>,</span>
+<span>    levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"low"</span>, <span class="st">"medium"</span>, <span class="st">"high"</span><span class="op">)</span>,</span>
+<span>    ordered <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span><span class="op">)</span>,</span>
+<span>  flag <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  harvest_date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2026-01-01"</span>, <span class="st">"2026-01-02"</span>, <span class="st">"2026-01-03"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  timestamp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"2026-01-01 08:00:00"</span>,</span>
+<span>    <span class="st">"2026-01-02 08:00:00"</span>,</span>
+<span>    <span class="st">"2026-01-03 08:00:00"</span></span>
+<span>  <span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/safePivot.html">safePivot</a></span><span class="op">(</span></span>
+<span>  <span class="va">badge_dat</span>,</span>
+<span>  rows <span class="op">=</span> <span class="st">"ordered_group"</span>,</span>
+<span>  cols <span class="op">=</span> <span class="st">"flag"</span>,</span>
+<span>  vals <span class="op">=</span> <span class="st">"score"</span>,</span>
+<span>  aggregator <span class="op">=</span> <span class="st">"Mean"</span>,</span>
+<span>  show_type_badges <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>The badges help users choose suitable variables for rows, columns,
+and values. For ordered factors, always set levels explicitly if the
+order matters.</p>
+</div>
+<div class="section level2">
 <h2 id="row-and-column-totals">Row and column totals<a class="anchor" aria-label="anchor" href="#row-and-column-totals"></a>
 </h2>
 <p>You can control totals from R:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/safePivot.html">safePivot</a></span><span class="op">(</span></span>
 <span>  <span class="va">mtcars</span>,</span>
 <span>  rows <span class="op">=</span> <span class="st">"cyl"</span>,</span>
@@ -308,61 +454,26 @@ the result in R.</p>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="missing-values">Missing values<a class="anchor" aria-label="anchor" href="#missing-values"></a>
-</h2>
-<p>Missing categorical values can be displayed as a labelled
-category.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">iris_missing</span> <span class="op">&lt;-</span> <span class="va">iris</span></span>
-<span><span class="va">iris_missing</span><span class="op">$</span><span class="va">Group</span> <span class="op">&lt;-</span> <span class="va">iris_missing</span><span class="op">$</span><span class="va">Species</span></span>
-<span><span class="va">iris_missing</span><span class="op">$</span><span class="va">Group</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">5</span>, <span class="fl">10</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
-<span><span class="va">iris_missing</span><span class="op">$</span><span class="va">Sepal.Length</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">6</span>, <span class="fl">11</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
-<span></span>
-<span><span class="fu"><a href="../reference/safePivot.html">safePivot</a></span><span class="op">(</span></span>
-<span>  <span class="va">iris_missing</span>,</span>
-<span>  rows <span class="op">=</span> <span class="st">"Group"</span>,</span>
-<span>  vals <span class="op">=</span> <span class="st">"Sepal.Length"</span>,</span>
-<span>  aggregator <span class="op">=</span> <span class="st">"N missing"</span>,</span>
-<span>  renderer <span class="op">=</span> <span class="st">"Table"</span>,</span>
-<span>  missing_label <span class="op">=</span> <span class="st">"(Missing)"</span>,</span>
-<span>  show_missing_category <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>Missing cells in the pivot display are styled as neutral grey.</p>
-</div>
-<div class="section level2">
-<h2 id="factor-order">Factor order<a class="anchor" aria-label="anchor" href="#factor-order"></a>
-</h2>
-<p>If a variable is an R factor, <code>safePivot</code> can respect the
-factor-level order.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">iris2</span> <span class="op">&lt;-</span> <span class="va">iris</span></span>
-<span><span class="va">iris2</span><span class="op">$</span><span class="va">Species</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span></span>
-<span>  <span class="va">iris2</span><span class="op">$</span><span class="va">Species</span>,</span>
-<span>  levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"virginica"</span>, <span class="st">"versicolor"</span>, <span class="st">"setosa"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="../reference/safePivot.html">safePivot</a></span><span class="op">(</span></span>
-<span>  <span class="va">iris2</span>,</span>
-<span>  rows <span class="op">=</span> <span class="st">"Species"</span>,</span>
-<span>  vals <span class="op">=</span> <span class="st">"Sepal.Length"</span>,</span>
-<span>  aggregator <span class="op">=</span> <span class="st">"Median"</span>,</span>
-<span>  renderer <span class="op">=</span> <span class="st">"Table"</span>,</span>
-<span>  respect_factor_order <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
 <h2 id="common-aggregators">Common aggregators<a class="anchor" aria-label="anchor" href="#common-aggregators"></a>
 </h2>
 <p>Useful aggregators include:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="st">"Count"</span>,</span>
 <span>  <span class="st">"Count unique"</span>,</span>
 <span>  <span class="st">"List unique values"</span>,</span>
 <span>  <span class="st">"N non-missing"</span>,</span>
 <span>  <span class="st">"N missing"</span>,</span>
-<span>  <span class="st">"Non-missing %"</span>,</span>
-<span>  <span class="st">"Missing %"</span>,</span>
+<span>  <span class="st">"Missing % within Cell"</span>,</span>
+<span>  <span class="st">"Missing % of Row"</span>,</span>
+<span>  <span class="st">"Missing % of Column"</span>,</span>
+<span>  <span class="st">"Missing % of Total"</span>,</span>
+<span>  <span class="st">"N zero"</span>,</span>
+<span>  <span class="st">"N non-zero"</span>,</span>
+<span>  <span class="st">"Zero % within Cell"</span>,</span>
+<span>  <span class="st">"Zero % of Row"</span>,</span>
+<span>  <span class="st">"Zero % of Column"</span>,</span>
+<span>  <span class="st">"Zero % of Total"</span>,</span>
 <span>  <span class="st">"Sum"</span>,</span>
 <span>  <span class="st">"Mean"</span>,</span>
 <span>  <span class="st">"Median"</span>,</span>
@@ -388,11 +499,11 @@ factor-level order.</p>
 <h2 id="notes-for-larger-data">Notes for larger data<a class="anchor" aria-label="anchor" href="#notes-for-larger-data"></a>
 </h2>
 <p><code>safePivot</code> sends data to the browser for interactive
-pivoting. For large data, filter or aggregate first before sending data
-to <code><a href="../reference/safePivot.html">safePivot()</a></code>.</p>
+pivoting. For large data, filter, select, or aggregate first before
+sending data to <code><a href="../reference/safePivot.html">safePivot()</a></code>.</p>
 <p>A practical workflow is:</p>
 <ol style="list-style-type: decimal">
-<li>filter data in Shiny;</li>
+<li>filter data in Shiny or in the database;</li>
 <li>send the reduced data to <code><a href="../reference/safePivot.html">safePivot()</a></code>;</li>
 <li>use <code><a href="../reference/safe_pivot_compute_from_config.html">safe_pivot_compute_from_config()</a></code> for export;</li>
 <li>export only the current pivot result.</li>
