@@ -12,14 +12,6 @@ safe_pivot_write_csv <- function(pivot_result, file, which = c("wide", "long")) 
   invisible(file)
 }
 
-#' Write pivot result to Excel
-#'
-#' @param pivot_result A result object returned by `safe_pivot_compute()`.
-#' @param file Output `.xlsx` file path.
-#'
-#' @return Invisibly returns `file`.
-#' @export
-
 safe_pivot_xlsx_palette <- function(palette = "blue_white_red") {
   switch(
     palette,
