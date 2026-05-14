@@ -1,4 +1,3 @@
-
 # Internal dependency helper
 safePivot_dependencies <- function() {
   list(
@@ -28,7 +27,7 @@ safePivot_dependencies <- function() {
     
     htmltools::htmlDependency(
       name = "safePivot-style",
-      version = "0.0.0.9000",
+      version = "0.1.0",
       src = c(file = system.file(
         "htmlwidgets/lib/safePivot",
         package = "safePivot"
@@ -37,16 +36,6 @@ safePivot_dependencies <- function() {
     )
   )
 }
-
-htmltools::htmlDependency(
-  name = "safePivot-style",
-  version = "0.0.0.9000",
-  src = c(file = system.file(
-    "htmlwidgets/lib/safePivot",
-    package = "safePivot"
-  )),
-  stylesheet = "safePivot.css"
-)
 
 #' Safe drag-and-drop pivot table htmlwidget
 #'
@@ -69,8 +58,15 @@ htmltools::htmlDependency(
 #' @param show_col_totals Whether to show column totals in table renderers.
 #' @param heatmap_palette Heatmap palette. One of `"blue"`, `"yellow_orange"`,
 #'   `"green"`, `"blue_white_red"`, or `"green_red"`.
-#' @param conditional_format Whether to apply additional conditional formatting
-#'   classes to numeric pivot cells.
+#' @param show_type_badges Whether to show small data-type badges beside
+#'   draggable variable names in the pivot UI.
+#' @param conditional_format Whether to apply browser-side conditional
+#'   formatting to pivot table cells.
+#' @param conditional_format_mode Conditional formatting mode. One of
+#'   `"none"`, `"value"`, `"data_quality"`, or `"both"`.
+#'   `"none"` applies no extra formatting. `"value"` highlights high and
+#'   low numeric values. `"data_quality"` highlights empty cells and zero
+#'   values. `"both"` combines value and data-quality formatting.
 #' @param high_threshold Relative threshold for high-value cell formatting.
 #'   Values are scaled from 0 to 1 within the displayed pivot table.
 #' @param low_threshold Relative threshold for low-value cell formatting.
@@ -93,7 +89,6 @@ htmltools::htmlDependency(
 #' }
 #'
 #' @export
-
 safePivot <- function(
     data,
     rows = NULL,
@@ -108,14 +103,15 @@ safePivot <- function(
     show_row_totals = TRUE,
     show_col_totals = TRUE,
     heatmap_palette = "blue",
+    show_type_badges = TRUE,
     conditional_format = TRUE,
+    conditional_format_mode = "both",
     high_threshold = 0.85,
     low_threshold = 0.15,
     max_rows = 50000,
     width = "100%",
     height = 600
 ) {
-  
   stopifnot(is.data.frame(data))
   
   if (nrow(data) > max_rows) {
@@ -126,6 +122,14 @@ safePivot <- function(
     )
   }
   
+  rows <- safe_pivot_chr(rows)
+  cols <- safe_pivot_chr(cols)
+  vals <- safe_pivot_chr(vals)
+  
+  aggregator <- safe_pivot_config_scalar(aggregator, "Median")
+  renderer <- safe_pivot_config_scalar(renderer, "Table")
+  aggregator <- safe_pivot_normalize_aggregator(aggregator)
+  
   allowed_renderers <- c(
     "Table",
     "Heatmap",
@@ -133,34 +137,7 @@ safePivot <- function(
     "Col Heatmap"
   )
   
-  allowed_aggregators <- c(
-    "Count",
-    "Count unique",
-    "List unique values",
-    "N non-missing",
-    "N missing",
-    "Non-missing %",
-    "Missing %",
-    "Mean",
-    "Median",
-    "Sum",
-    "Sum as Fraction of Total",
-    "Sum as Fraction of Rows",
-    "Sum as Fraction of Columns",
-    "Count as Fraction of Total",
-    "Count as Fraction of Rows",
-    "Count as Fraction of Columns",
-    "Min",
-    "Max",
-    "Range",
-    "Variance",
-    "SD",
-    "SE",
-    "CV %",
-    "Q1",
-    "Q3",
-    "IQR"
-  )
+  allowed_aggregators <- safe_pivot_allowed_aggregators()
   
   if (!renderer %in% allowed_renderers) {
     stop("Unsupported renderer: ", renderer, call. = FALSE)
@@ -173,11 +150,18 @@ safePivot <- function(
   all_vars <- names(data)
   
   check_vars <- function(x, arg) {
-    if (is.null(x)) return(invisible(TRUE))
     bad <- setdiff(x, all_vars)
+    
     if (length(bad) > 0) {
-      stop(arg, " contains unknown variable(s): ", paste(bad, collapse = ", "), call. = FALSE)
+      stop(
+        arg,
+        " contains unknown variable(s): ",
+        paste(bad, collapse = ", "),
+        call. = FALSE
+      )
     }
+    
+    invisible(TRUE)
   }
   
   check_vars(rows, "rows")
@@ -185,13 +169,14 @@ safePivot <- function(
   check_vars(vals, "vals")
   
   factor_levels <- safe_pivot_factor_levels(data)
+  variable_types <- safe_pivot_variable_types(data)
   
   data <- safe_pivot_prepare_data(
     data = data,
     missing_label = missing_label,
     show_missing_category = show_missing_category
   )
- 
+  
   allowed_palettes <- c(
     "blue",
     "yellow_orange",
@@ -223,27 +208,51 @@ safePivot <- function(
     stop("`low_threshold` must be smaller than `high_threshold`.", call. = FALSE)
   }
   
+  allowed_conditional_format_modes <- c(
+    "none",
+    "value",
+    "data_quality",
+    "both"
+  )
+  
+  conditional_format_mode <- safe_pivot_config_scalar(
+    conditional_format_mode,
+    "both"
+  )
+  
+  if (!conditional_format_mode %in% allowed_conditional_format_modes) {
+    stop(
+      "Unsupported conditional_format_mode: ", conditional_format_mode,
+      ". Supported values are: ",
+      paste(allowed_conditional_format_modes, collapse = ", "),
+      call. = FALSE
+    )
+  }
+  
   x <- list(
     data = data,
-    rows = rows %||% character(),
-    cols = cols %||% character(),
-    vals = vals %||% character(),
+    rows = rows,
+    cols = cols,
+    vals = vals,
     aggregator = aggregator,
     renderer = renderer,
     missing_label = missing_label,
     factor_levels = factor_levels,
     respect_factor_order = respect_factor_order,
+    variable_types = variable_types,
     numeric_digits = numeric_digits,
     show_row_totals = isTRUE(show_row_totals),
     show_col_totals = isTRUE(show_col_totals),
     heatmap_palette = heatmap_palette,
+    show_type_badges = isTRUE(show_type_badges),
     conditional_format = isTRUE(conditional_format),
+    conditional_format_mode = conditional_format_mode,
     high_threshold = high_threshold,
     low_threshold = low_threshold,
     allowed_renderers = allowed_renderers,
     allowed_aggregators = allowed_aggregators
   )
-
+  
   htmlwidgets::createWidget(
     name = "safePivot",
     x = x,
@@ -252,5 +261,4 @@ safePivot <- function(
     package = "safePivot",
     dependencies = safePivot_dependencies()
   )
-  
 }

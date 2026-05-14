@@ -2,18 +2,61 @@
 % Please edit documentation in R/export.R
 \name{safe_pivot_write_xlsx}
 \alias{safe_pivot_write_xlsx}
-\title{Write pivot result to Excel}
+\title{Write a safePivot result to an Excel workbook}
 \usage{
-safe_pivot_write_xlsx(pivot_result, file)
+safe_pivot_write_xlsx(
+  x,
+  file,
+  sheet = "safePivot",
+  include_heatmap = TRUE,
+  include_conditional_format = TRUE,
+  conditional_format_mode = "both",
+  heatmap_palette = "blue_white_red",
+  high_threshold = 0.85,
+  low_threshold = 0.15,
+  empty_fill = "#E5E7EB",
+  zero_fill = "#FEF3C7",
+  high_fill = "#FFF7ED",
+  low_fill = "#EFF6FF",
+  overwrite = TRUE
+)
 }
 \arguments{
-\item{pivot_result}{A result object returned by \code{safe_pivot_compute()}.}
+\item{x}{A result from \code{safe_pivot_compute()} / \code{safe_pivot_compute_from_config()},
+or a data frame.}
 
 \item{file}{Output \code{.xlsx} file path.}
+
+\item{sheet}{Worksheet name.}
+
+\item{include_heatmap}{Whether to export heatmap-style cell fills.}
+
+\item{include_conditional_format}{Whether to export conditional formatting
+styles.}
+
+\item{conditional_format_mode}{One of \code{"none"}, \code{"value"},
+\code{"data_quality"}, or \code{"both"}.}
+
+\item{heatmap_palette}{Heatmap palette. One of \code{"blue"}, \code{"yellow_orange"},
+\code{"green"}, \code{"green_red"}, or \code{"blue_white_red"}.}
+
+\item{high_threshold}{Relative high-value threshold from 0 to 1.}
+
+\item{low_threshold}{Relative low-value threshold from 0 to 1.}
+
+\item{empty_fill}{Fill colour for empty / unavailable cells.}
+
+\item{zero_fill}{Fill colour for displayed zero cells.}
+
+\item{high_fill}{Fill colour for high-value cells.}
+
+\item{low_fill}{Fill colour for low-value cells.}
+
+\item{overwrite}{Whether to overwrite an existing file.}
 }
 \value{
 Invisibly returns \code{file}.
 }
 \description{
-Write pivot result to Excel
+Write a safePivot result to an Excel workbook
 }

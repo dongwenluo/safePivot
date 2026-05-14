@@ -15,19 +15,23 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Using safePivot in Shiny
+# Overview
 
 `safePivot` provides a drag-and-drop pivot-table widget for Shiny applications.
+The browser-side widget is used for interaction, while R is used for reproducible
+computation and export.
 
-The main Shiny workflow is:
+The recommended Shiny workflow is:
 
 1. display the widget with `safePivotOutput()`;
 2. render it with `renderSafePivot()`;
 3. capture the current pivot configuration through `input$<outputId>_config`;
 4. recompute the current pivot result in R with `safe_pivot_compute_from_config()`;
-5. export the result with CSV, Excel, RDS, or RData helpers.
+5. export the R-computed result with CSV, Excel, RDS, or RData helpers.
 
-This design avoids scraping the HTML table from the browser. Instead, the browser sends the pivot configuration back to Shiny, and R recomputes the exported table from the original data.
+This design avoids scraping the HTML table from the browser. Instead, the browser
+sends the pivot configuration back to Shiny, and R recomputes the exported table
+from the original data.
 
 # Minimal Shiny app
 
@@ -37,7 +41,6 @@ library(safePivot)
 
 ui <- fluidPage(
   titlePanel("safePivot Shiny example"),
-
   safePivotOutput("pivot", height = "650px")
 )
 
@@ -48,7 +51,8 @@ server <- function(input, output, session) {
       rows = "Species",
       vals = "Sepal.Length",
       aggregator = "Median",
-      renderer = "Table"
+      renderer = "Table",
+      show_type_badges = TRUE
     )
   })
 }
@@ -56,9 +60,10 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 ```
 
-# Heatmap example
+# Heatmap and conditional formatting
 
-`safePivot` supports heatmap renderers and readable colour palettes.
+`safePivot` supports table and heatmap renderers, readable heatmap palettes, and
+browser-side conditional formatting.
 
 ```{r}
 library(shiny)
@@ -66,7 +71,6 @@ library(safePivot)
 
 ui <- fluidPage(
   titlePanel("safePivot heatmap example"),
-
   safePivotOutput("pivot", height = "650px")
 )
 
@@ -79,8 +83,9 @@ server <- function(input, output, session) {
       vals = "mpg",
       aggregator = "Mean",
       renderer = "Heatmap",
-      heatmap_palette = "blue",
+      heatmap_palette = "blue_white_red",
       conditional_format = TRUE,
+      conditional_format_mode = "both",
       show_row_totals = TRUE,
       show_col_totals = TRUE
     )
@@ -98,9 +103,22 @@ Available heatmap palettes include:
 - `"blue_white_red"`
 - `"green_red"`
 
-The default `"blue"` palette is designed to keep black text readable.
+Available conditional formatting modes are:
 
-# Export current pivot table
+| Mode | Behaviour |
+|---|---|
+| `"none"` | No extra conditional formatting |
+| `"value"` | Highlight high and low numeric values |
+| `"data_quality"` | Highlight empty cells and zero cells |
+| `"both"` | Combine value and data-quality formatting |
+
+The recommended visual priority is:
+
+```text
+empty / unavailable cells > zero cells > heatmap or high-low value styling
+```
+
+# Export the current pivot table
 
 The key helper for Shiny export is `safe_pivot_compute_from_config()`.
 
@@ -115,6 +133,10 @@ where `pivot` is the output ID used in:
 ```r
 safePivotOutput("pivot")
 ```
+
+`safe_pivot_compute_from_config()` also accepts default rows, columns, values,
+and aggregator settings. These defaults are important because `input$pivot_config`
+may be `NULL` before the widget sends its first configuration back to Shiny.
 
 The following app exports the current pivot result to CSV, Excel, RDS, and RData.
 
@@ -153,7 +175,10 @@ server <- function(input, output, session) {
       rows = "Species",
       vals = "Sepal.Length",
       aggregator = "Median",
-      renderer = "Table"
+      renderer = "Table",
+      show_type_badges = TRUE,
+      conditional_format = TRUE,
+      conditional_format_mode = "both"
     )
   })
 
@@ -192,7 +217,11 @@ server <- function(input, output, session) {
     content = function(file) {
       safe_pivot_write_xlsx(
         current_pivot(),
-        file
+        file,
+        include_heatmap = TRUE,
+        include_conditional_format = TRUE,
+        conditional_format_mode = "both",
+        heatmap_palette = "blue_white_red"
       )
     }
   )
@@ -228,15 +257,144 @@ shinyApp(ui, server)
 
 # Why use config-based export?
 
-A browser pivot table is interactive. Users can move variables between rows, columns, and values, and they can change the aggregator.
+A browser pivot table is interactive. Users can move variables between rows,
+columns, and values, and they can change the aggregator.
 
-Instead of trying to parse the displayed HTML table, `safePivot` captures the current configuration and recomputes the result in R.
+Instead of trying to parse the displayed HTML table, `safePivot` captures the
+current configuration and recomputes the result in R.
 
 This gives three advantages:
 
 - exported results are generated from the original data;
 - export logic is testable in R;
 - Shiny apps do not need custom HTML-scraping code.
+
+# Export consistency
+
+The interactive browser table and the R-side export engine use the same
+aggregator names. This means a user can change the pivot table in the browser and
+then export the current result through `safe_pivot_compute_from_config()`.
+
+`safePivot` distinguishes:
+
+```text
+empty pivot cell  = no records exist for that row-column combination
+observed missing  = a record exists, but the selected value is NA
+observed zero     = a record exists and the selected numeric value is 0
+```
+
+For example:
+
+```r
+quality_dat <- data.frame(
+  row = c("A", "A", "A", "B", "B", "C"),
+  col = c("X", "X", "Y", "X", "Y", "X"),
+  y = c(0, 1, NA, 0, 5, NA)
+)
+
+safe_pivot_compute(
+  quality_dat,
+  rows = "row",
+  cols = "col",
+  vals = "y",
+  aggregator = "N missing"
+)$wide
+```
+
+In this example:
+
+```text
+A × Y has one observed missing value, so N missing = 1.
+C × X has one observed missing value, so N missing = 1.
+C × Y has no records, so it remains NA.
+```
+
+Zero percentages use numeric non-missing values as the denominator:
+
+```r
+safe_pivot_compute(
+  quality_dat,
+  rows = "row",
+  cols = "col",
+  vals = "y",
+  aggregator = "Zero % within Cell"
+)$wide
+```
+
+So:
+
+```text
+A × X has values 0 and 1, so Zero % within Cell = 50.
+A × Y has only NA, so Zero % within Cell = NA.
+C × X has only NA, so Zero % within Cell = NA.
+C × Y has no records, so it remains NA.
+```
+
+# Styled Excel export
+
+Excel export can preserve safePivot-style visual cues.
+
+```{r}
+res <- safe_pivot_compute(
+  quality_dat,
+  rows = "row",
+  cols = "col",
+  vals = "y",
+  aggregator = "Sum"
+)
+
+safe_pivot_write_xlsx(
+  res,
+  file = "safePivot-export.xlsx",
+  include_heatmap = TRUE,
+  include_conditional_format = TRUE,
+  conditional_format_mode = "both",
+  heatmap_palette = "blue_white_red"
+)
+```
+
+The recommended priority is:
+
+```text
+empty / unavailable cells > zero cells > heatmap or high-low value styling
+```
+
+# Variable type badges
+
+`safePivot` can show data-type badges beside draggable variable names.
+
+```{r}
+badge_dat <- data.frame(
+  id = 1:3,
+  score = c(1.2, 3.4, 5.6),
+  group = factor(c("A", "B", "A")),
+  ordered_group = factor(
+    c("low", "medium", "high"),
+    levels = c("low", "medium", "high"),
+    ordered = TRUE
+  ),
+  name = c("x", "y", "z"),
+  flag = c(TRUE, FALSE, TRUE),
+  harvest_date = as.Date(c("2026-01-01", "2026-01-02", "2026-01-03")),
+  timestamp = as.POSIXct(c(
+    "2026-01-01 08:00:00",
+    "2026-01-02 08:00:00",
+    "2026-01-03 08:00:00"
+  ))
+)
+
+safePivot(
+  badge_dat,
+  rows = "ordered_group",
+  cols = "flag",
+  vals = "score",
+  aggregator = "Mean",
+  show_type_badges = TRUE
+)
+```
+
+The badges help users choose suitable variables for rows, columns, and values.
+For ordered factors, always set levels explicitly if the order matters.
 
 # Row and column totals
 
@@ -255,50 +413,6 @@ safePivot(
 )
 ```
 
-# Missing values
-
-Missing categorical values can be displayed as a labelled category.
-
-```{r}
-iris_missing <- iris
-iris_missing$Group <- iris_missing$Species
-iris_missing$Group[c(1, 5, 10)] <- NA
-iris_missing$Sepal.Length[c(2, 6, 11)] <- NA
-
-safePivot(
-  iris_missing,
-  rows = "Group",
-  vals = "Sepal.Length",
-  aggregator = "N missing",
-  renderer = "Table",
-  missing_label = "(Missing)",
-  show_missing_category = TRUE
-)
-```
-
-Missing cells in the pivot display are styled as neutral grey.
-
-# Factor order
-
-If a variable is an R factor, `safePivot` can respect the factor-level order.
-
-```{r}
-iris2 <- iris
-iris2$Species <- factor(
-  iris2$Species,
-  levels = c("virginica", "versicolor", "setosa")
-)
-
-safePivot(
-  iris2,
-  rows = "Species",
-  vals = "Sepal.Length",
-  aggregator = "Median",
-  renderer = "Table",
-  respect_factor_order = TRUE
-)
-```
-
 # Common aggregators
 
 Useful aggregators include:
@@ -310,8 +424,16 @@ c(
   "List unique values",
   "N non-missing",
   "N missing",
-  "Non-missing %",
-  "Missing %",
+  "Missing % within Cell",
+  "Missing % of Row",
+  "Missing % of Column",
+  "Missing % of Total",
+  "N zero",
+  "N non-zero",
+  "Zero % within Cell",
+  "Zero % of Row",
+  "Zero % of Column",
+  "Zero % of Total",
   "Sum",
   "Mean",
   "Median",
@@ -336,12 +458,12 @@ c(
 
 # Notes for larger data
 
-`safePivot` sends data to the browser for interactive pivoting. For large data, filter or aggregate first before sending data to `safePivot()`.
+`safePivot` sends data to the browser for interactive pivoting. For large data,
+filter, select, or aggregate first before sending data to `safePivot()`.
 
 A practical workflow is:
 
-1. filter data in Shiny;
+1. filter data in Shiny or in the database;
 2. send the reduced data to `safePivot()`;
 3. use `safe_pivot_compute_from_config()` for export;
 4. export only the current pivot result.
-

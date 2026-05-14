@@ -35,3 +35,16 @@ A list with \code{long}, \code{wide}, and \code{config}.
 \description{
 Compute pivot result in R
 }
+\details{
+safePivot distinguishes empty pivot cells, observed missing values, and
+observed numeric zero values. An empty pivot cell means no records exist for
+that row-column combination and is returned as \code{NA} after widening. An
+observed missing value means a record exists but the selected value is \code{NA};
+this contributes to \verb{N missing}. Zero and non-zero aggregators use finite
+numeric non-missing values only.
+
+Missing and non-missing percentages use observed record counts as
+denominators. Zero and non-zero percentages use numeric non-missing counts
+as denominators. Sum fraction aggregators use numeric sums as denominators,
+while count fraction aggregators use observed record counts as denominators.
+}

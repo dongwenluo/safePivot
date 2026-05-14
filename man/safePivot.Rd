@@ -18,7 +18,9 @@ safePivot(
   show_row_totals = TRUE,
   show_col_totals = TRUE,
   heatmap_palette = "blue",
+  show_type_badges = TRUE,
   conditional_format = TRUE,
+  conditional_format_mode = "both",
   high_threshold = 0.85,
   low_threshold = 0.15,
   max_rows = 50000,
@@ -55,8 +57,17 @@ safePivot(
 \item{heatmap_palette}{Heatmap palette. One of \code{"blue"}, \code{"yellow_orange"},
 \code{"green"}, \code{"blue_white_red"}, or \code{"green_red"}.}
 
-\item{conditional_format}{Whether to apply additional conditional formatting
-classes to numeric pivot cells.}
+\item{show_type_badges}{Whether to show small data-type badges beside
+draggable variable names in the pivot UI.}
+
+\item{conditional_format}{Whether to apply browser-side conditional
+formatting to pivot table cells.}
+
+\item{conditional_format_mode}{Conditional formatting mode. One of
+\code{"none"}, \code{"value"}, \code{"data_quality"}, or \code{"both"}.
+\code{"none"} applies no extra formatting. \code{"value"} highlights high and
+low numeric values. \code{"data_quality"} highlights empty cells and zero
+values. \code{"both"} combines value and data-quality formatting.}
 
 \item{high_threshold}{Relative threshold for high-value cell formatting.
 Values are scaled from 0 to 1 within the displayed pivot table.}
