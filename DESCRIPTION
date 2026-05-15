@@ -1,9 +1,9 @@
 Package: safePivot
 Title: Safe Drag-and-Drop Pivot Tables for Shiny and HTML Widgets
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: 
     person("Dongwen", "Luo", , "dongwen.luo@agresearch.co.nz", role = c("aut", "cre"))
-Description: Provides a safe PivotTable.js htmlwidget for interactive drag-and-drop tabulation, summary aggregation, heatmaps, lightweight Plotly charts, Shiny configuration capture, and reproducible export helpers.
+Description: Provides a safe drag-and-drop pivot table htmlwidget for R and Shiny. It wraps PivotTable.js with robust numeric aggregators, missing-value and zero-value summaries, factor-order preservation, heatmaps, lightweight Plotly chart renderers, Shiny configuration capture, and export helpers for CSV, Excel, RDS, and RData outputs.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -12,10 +12,12 @@ Imports:
     dplyr,
     htmltools,
     htmlwidgets,
-    openxlsx,
     tidyr
 Suggests: 
+    bslib,
     knitr,
+    openxlsx,
+    pkgdown,
     rmarkdown,
     shiny,
     testthat (>= 3.0.0)
