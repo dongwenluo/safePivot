@@ -455,64 +455,63 @@ safe_pivot_to_wide <- function(long, rows, cols) {
 
 safe_pivot_compute_fraction <- function(data, rows, cols, vals, aggregator) {
   aggregator <- safe_pivot_normalize_aggregator(aggregator)
-
+  
   rows <- safe_pivot_chr(rows)
   cols <- safe_pivot_chr(cols)
   vals <- safe_pivot_chr(vals)
-
+  
   sum_fraction_aggs <- c(
     "Sum as Fraction of Total",
     "Sum as Fraction of Rows",
     "Sum as Fraction of Columns"
   )
-
+  
   count_fraction_aggs <- c(
     "Count as Fraction of Total",
     "Count as Fraction of Rows",
     "Count as Fraction of Columns"
   )
-
+  
   is_sum_fraction <- aggregator %in% sum_fraction_aggs
   is_count_fraction <- aggregator %in% count_fraction_aggs
-
+  
   if (!is_sum_fraction && !is_count_fraction) {
     stop("Unsupported fraction aggregator: ", aggregator, call. = FALSE)
   }
-
-  if (is_sum_fraction &&
-      (length(vals) != 1 || is.na(vals[[1]]) || !nzchar(vals[[1]]))) {
+  
+  if (
+    is_sum_fraction &&
+    (length(vals) != 1 || is.na(vals[[1]]) || !nzchar(vals[[1]]))
+  ) {
     stop(
       "Aggregator '", aggregator, "' requires exactly one value column in `vals`.",
       call. = FALSE
     )
   }
-
-  # Count-fraction aggregators do not need `vals` or `cols`. The previous
-  # implementation used `cols[[1]]`, which fails when `cols` is empty.
-  if (is_count_fraction) {
-    count_var <- safe_pivot_new_col_name(data, ".safePivot_count")
+  
+  count_var <- ".safePivot_count_var"
+  
+  if (is_count_fraction && !count_var %in% names(data)) {
     data[[count_var]] <- seq_len(nrow(data))
-    value_var <- count_var
-  } else {
-    value_var <- vals[[1]]
   }
-
+  
+  value_var <- if (is_sum_fraction) vals[[1]] else count_var
   group_vars <- c(rows, cols)
-
+  
   cell_summary <- safe_pivot_group_counts(
     data = data,
     group_vars = group_vars,
     value_var = value_var,
     prefix = ".safePivot_cell"
   )
-
+  
   total_summary <- safe_pivot_group_counts(
     data = data,
     group_vars = character(),
     value_var = value_var,
     prefix = ".safePivot_total"
   )
-
+  
   if (is_sum_fraction) {
     cell_num <- cell_summary$.safePivot_cell_sum_numeric
     total_denom <- total_summary$.safePivot_total_sum_numeric[[1]]
@@ -520,16 +519,17 @@ safe_pivot_compute_fraction <- function(data, rows, cols, vals, aggregator) {
     cell_num <- cell_summary$.safePivot_cell_all_n
     total_denom <- total_summary$.safePivot_total_all_n[[1]]
   }
-
+  
   cell_summary$.value <- NA_real_
-
+  
   if (aggregator %in% c("Sum as Fraction of Total", "Count as Fraction of Total")) {
     cell_summary$.value <- safe_pivot_pct(cell_num, total_denom)
   }
-
+  
   if (aggregator %in% c("Sum as Fraction of Rows", "Count as Fraction of Rows")) {
     if (length(rows) == 0) {
-      cell_summary$.value <- safe_pivot_pct(cell_num, total_denom)
+      row_denom <- total_denom
+      cell_summary$.value <- safe_pivot_pct(cell_num, row_denom)
     } else {
       row_summary <- safe_pivot_group_counts(
         data = data,
@@ -537,22 +537,23 @@ safe_pivot_compute_fraction <- function(data, rows, cols, vals, aggregator) {
         value_var = value_var,
         prefix = ".safePivot_row"
       )
-
+      
       cell_summary <- dplyr::left_join(cell_summary, row_summary, by = rows)
-
+      
       row_denom <- if (is_sum_fraction) {
         cell_summary$.safePivot_row_sum_numeric
       } else {
         cell_summary$.safePivot_row_all_n
       }
-
+      
       cell_summary$.value <- safe_pivot_pct(cell_num, row_denom)
     }
   }
-
+  
   if (aggregator %in% c("Sum as Fraction of Columns", "Count as Fraction of Columns")) {
     if (length(cols) == 0) {
-      cell_summary$.value <- safe_pivot_pct(cell_num, total_denom)
+      col_denom <- total_denom
+      cell_summary$.value <- safe_pivot_pct(cell_num, col_denom)
     } else {
       col_summary <- safe_pivot_group_counts(
         data = data,
@@ -560,24 +561,24 @@ safe_pivot_compute_fraction <- function(data, rows, cols, vals, aggregator) {
         value_var = value_var,
         prefix = ".safePivot_col"
       )
-
+      
       cell_summary <- dplyr::left_join(cell_summary, col_summary, by = cols)
-
+      
       col_denom <- if (is_sum_fraction) {
         cell_summary$.safePivot_col_sum_numeric
       } else {
         cell_summary$.safePivot_col_all_n
       }
-
+      
       cell_summary$.value <- safe_pivot_pct(cell_num, col_denom)
     }
   }
-
+  
   long <- cell_summary |>
     dplyr::select(dplyr::all_of(c(group_vars, ".value")))
-
+  
   wide <- safe_pivot_to_wide(long, rows = rows, cols = cols)
-
+  
   list(
     long = long,
     wide = wide,
