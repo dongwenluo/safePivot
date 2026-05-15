@@ -65,10 +65,11 @@ safe_pivot_xlsx_is_empty <- function(x) {
   if (length(x) == 0 || is.na(x)) {
     return(TRUE)
   }
-  
+
   z <- trimws(as.character(x))
-  
-  z %in% c("", "NA", "NaN", "NULL", "null")
+  z_lower <- tolower(z)
+
+  z == "" || z_lower %in% c("na", "nan", "null", "undefined") || z == "-"
 }
 
 safe_pivot_xlsx_num <- function(x) {
@@ -328,6 +329,23 @@ safe_pivot_write_xlsx <- function(
       conditional_format_mode,
       ". Supported values are: ",
       paste(allowed_modes, collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  allowed_palettes <- c(
+    "blue",
+    "yellow_orange",
+    "green",
+    "green_red",
+    "blue_white_red"
+  )
+
+  if (!heatmap_palette %in% allowed_palettes) {
+    stop(
+      "Unsupported heatmap_palette: ", heatmap_palette,
+      ". Supported values are: ",
+      paste(allowed_palettes, collapse = ", "),
       call. = FALSE
     )
   }

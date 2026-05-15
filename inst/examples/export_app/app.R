@@ -4,7 +4,7 @@ library(safePivot)
 ui <- fluidPage(
   titlePanel("safePivot export example"),
   
-  safePivotOutput("pivot", height = "650px"),
+  safePivotOutput("pivot", height = "850px"),
   
   hr(),
   
@@ -23,16 +23,18 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   dat <- reactive({
-    iris
+    mtcars
   })
   
   output$pivot <- renderSafePivot({
     safePivot(
       dat(),
-      rows = "Species",
-      vals = "Sepal.Length",
+      rows = "gear",
+      cols = "carb",
+      vals = "mpg",
       aggregator = "Median",
-      renderer = "Table"
+      heatmap_palette = "blue_white_red",
+      renderer = "Bar Chart",
     )
   })
   
@@ -44,8 +46,8 @@ server <- function(input, output, session) {
     safe_pivot_compute_from_config(
       data = dat(),
       config = input$pivot_config,
-      default_rows = "Species",
-      default_vals = "Sepal.Length",
+      default_rows = "gear",
+      default_vals = "mpg",
       default_aggregator = "Median"
     )
   })

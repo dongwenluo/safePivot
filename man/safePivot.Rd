@@ -23,9 +23,23 @@ safePivot(
   conditional_format_mode = "both",
   high_threshold = 0.85,
   low_threshold = 0.15,
+  ui_font_size = 16,
+  pill_font_size = 17,
+  table_font_size = 18,
+  badge_font_size = 12,
+  plot_default_height = 620,
+  plot_min_height = 520,
+  plot_max_width = 1150,
+  plot_font_size = 16,
+  plot_title_size = 20,
+  axis_title_size = 16,
+  axis_tick_size = 14,
+  legend_font_size = 14,
+  plotly_layout = NULL,
+  plotly_config = NULL,
   max_rows = 50000,
   width = "100\%",
-  height = 600
+  height = NULL
 )
 }
 \arguments{
@@ -39,8 +53,11 @@ safePivot(
 
 \item{aggregator}{Initial aggregator name.}
 
-\item{renderer}{Initial renderer name. Supported values are \code{"Table"},
-\code{"Heatmap"}, \code{"Row Heatmap"}, and \code{"Col Heatmap"}.}
+\item{renderer}{Initial renderer. One of \code{"Table"}, \code{"Heatmap"},
+\code{"Row Heatmap"}, \code{"Col Heatmap"}, \code{"Bar Chart"},
+\code{"Stacked Bar Chart"}, \code{"Horizontal Bar Chart"},
+\code{"Horizontal Stacked Bar Chart"}, \code{"Line Chart"}, \code{"Area Chart"},
+\code{"Scatter Chart"}, or \code{"Multiple Pie Chart"}.}
 
 \item{missing_label}{Label used for missing categorical values.}
 
@@ -74,6 +91,20 @@ Values are scaled from 0 to 1 within the displayed pivot table.}
 
 \item{low_threshold}{Relative threshold for low-value cell formatting.
 Values are scaled from 0 to 1 within the displayed pivot table.}
+
+\item{ui_font_size, pill_font_size, table_font_size, badge_font_size}{Font sizes
+used by the browser UI, draggable variable pills, pivot table, and type badges.}
+
+\item{plot_default_height, plot_min_height, plot_max_width}{Default Plotly chart
+sizing controls used by chart renderers.}
+
+\item{plot_font_size, plot_title_size, axis_title_size, axis_tick_size, legend_font_size}{Font sizes used by Plotly chart renderers.}
+
+\item{plotly_layout}{Optional named list of Plotly layout values merged into
+the default chart layout.}
+
+\item{plotly_config}{Optional named list of Plotly config values merged into
+the default chart config.}
 
 \item{max_rows}{Maximum number of rows allowed for browser-side pivoting.}
 

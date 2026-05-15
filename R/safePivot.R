@@ -1,38 +1,60 @@
 # Internal dependency helper
 safePivot_dependencies <- function() {
   list(
-    jquerylib::jquery_core(3),
+    htmltools::htmlDependency(
+      name = "jquery",
+      version = "3.7.1",
+      src = c(file = "htmlwidgets/lib/jquery"),
+      package = "safePivot",
+      script = "jquery-3.7.1.min.js",
+      all_files = FALSE
+    ),
     
     htmltools::htmlDependency(
       name = "jquery-ui",
-      version = "1.14.2",
-      src = c(file = system.file(
-        "htmlwidgets/lib/jquery-ui",
-        package = "safePivot"
-      )),
+      version = "1.13.2",
+      src = c(file = "htmlwidgets/lib/jquery-ui"),
+      package = "safePivot",
       script = "jquery-ui.min.js",
-      stylesheet = "jquery-ui.min.css"
+      stylesheet = "jquery-ui.min.css",
+      all_files = FALSE
     ),
     
     htmltools::htmlDependency(
       name = "pivottable",
       version = "2.23.0",
-      src = c(file = system.file(
-        "htmlwidgets/lib/pivottable",
-        package = "safePivot"
-      )),
+      src = c(file = "htmlwidgets/lib/pivottable"),
+      package = "safePivot",
       script = "pivot.min.js",
-      stylesheet = "pivot.min.css"
+      stylesheet = "pivot.min.css",
+      all_files = FALSE
     ),
     
     htmltools::htmlDependency(
-      name = "safePivot-style",
+      name = "plotly-basic",
+      version = "1.58.5",
+      src = c(file = "htmlwidgets/lib/plotly"),
+      package = "safePivot",
+      script = "plotly-basic-latest.min.js",
+      all_files = FALSE
+    ),
+    
+    htmltools::htmlDependency(
+      name = "pivottable-plotly-renderers",
+      version = "2.23.0",
+      src = c(file = "htmlwidgets/lib/pivottable"),
+      package = "safePivot",
+      script = "plotly_renderers.js",
+      all_files = FALSE
+    ),
+    
+    htmltools::htmlDependency(
+      name = "safePivot-css",
       version = "0.1.0",
-      src = c(file = system.file(
-        "htmlwidgets/lib/safePivot",
-        package = "safePivot"
-      )),
-      stylesheet = "safePivot.css"
+      src = c(file = "htmlwidgets/lib/safePivot"),
+      package = "safePivot",
+      stylesheet = "safePivot.css",
+      all_files = FALSE
     )
   )
 }
@@ -48,8 +70,11 @@ safePivot_dependencies <- function() {
 #' @param cols Character vector of initial column variables.
 #' @param vals Character vector of initial value variable. In v0.1, use one value variable.
 #' @param aggregator Initial aggregator name.
-#' @param renderer Initial renderer name. Supported values are `"Table"`,
-#'   `"Heatmap"`, `"Row Heatmap"`, and `"Col Heatmap"`.
+#' @param renderer Initial renderer. One of `"Table"`, `"Heatmap"`,
+#'   `"Row Heatmap"`, `"Col Heatmap"`, `"Bar Chart"`,
+#'   `"Stacked Bar Chart"`, `"Horizontal Bar Chart"`,
+#'   `"Horizontal Stacked Bar Chart"`, `"Line Chart"`, `"Area Chart"`,
+#'   `"Scatter Chart"`, or `"Multiple Pie Chart"`.
 #' @param missing_label Label used for missing categorical values.
 #' @param show_missing_category Whether missing categorical values should be shown as a category.
 #' @param respect_factor_order Whether R factor levels should control display order.
@@ -71,6 +96,16 @@ safePivot_dependencies <- function() {
 #'   Values are scaled from 0 to 1 within the displayed pivot table.
 #' @param low_threshold Relative threshold for low-value cell formatting.
 #'   Values are scaled from 0 to 1 within the displayed pivot table.
+#' @param ui_font_size,pill_font_size,table_font_size,badge_font_size Font sizes
+#'   used by the browser UI, draggable variable pills, pivot table, and type badges.
+#' @param plot_default_height,plot_min_height,plot_max_width Default Plotly chart
+#'   sizing controls used by chart renderers.
+#' @param plot_font_size,plot_title_size,axis_title_size,axis_tick_size,legend_font_size
+#'   Font sizes used by Plotly chart renderers.
+#' @param plotly_layout Optional named list of Plotly layout values merged into
+#'   the default chart layout.
+#' @param plotly_config Optional named list of Plotly config values merged into
+#'   the default chart config.
 #' @param max_rows Maximum number of rows allowed for browser-side pivoting.
 #' @param width Widget width.
 #' @param height Widget height.
@@ -108,9 +143,23 @@ safePivot <- function(
     conditional_format_mode = "both",
     high_threshold = 0.85,
     low_threshold = 0.15,
+    ui_font_size = 16,
+    pill_font_size = 17,
+    table_font_size = 18,
+    badge_font_size = 12,
+    plot_default_height = 620,
+    plot_min_height = 520,
+    plot_max_width = 1150,
+    plot_font_size = 16,
+    plot_title_size = 20,
+    axis_title_size = 16,
+    axis_tick_size = 14,
+    legend_font_size = 14,
+    plotly_layout = NULL,
+    plotly_config = NULL,
     max_rows = 50000,
     width = "100%",
-    height = 600
+    height = NULL
 ) {
   stopifnot(is.data.frame(data))
   
@@ -134,15 +183,27 @@ safePivot <- function(
     "Table",
     "Heatmap",
     "Row Heatmap",
-    "Col Heatmap"
+    "Col Heatmap",
+    "Bar Chart",
+    "Stacked Bar Chart",
+    "Horizontal Bar Chart",
+    "Horizontal Stacked Bar Chart",
+    "Line Chart",
+    "Area Chart",
+    "Scatter Chart",
+    "Multiple Pie Chart"
   )
-  
-  allowed_aggregators <- safe_pivot_allowed_aggregators()
-  
+
   if (!renderer %in% allowed_renderers) {
-    stop("Unsupported renderer: ", renderer, call. = FALSE)
+    stop(
+      "Unsupported renderer: ", renderer,
+      ". Supported renderers are: ",
+      paste(allowed_renderers, collapse = ", "),
+      call. = FALSE
+    )
   }
   
+  allowed_aggregators <- safe_pivot_allowed_aggregators()
   if (!aggregator %in% allowed_aggregators) {
     stop("Unsupported aggregator: ", aggregator, call. = FALSE)
   }
@@ -207,6 +268,34 @@ safePivot <- function(
   if (low_threshold >= high_threshold) {
     stop("`low_threshold` must be smaller than `high_threshold`.", call. = FALSE)
   }
+
+  validate_positive_number <- function(x, nm) {
+    if (!is.numeric(x) || length(x) != 1 || is.na(x) || x <= 0) {
+      stop("`", nm, "` must be a single positive number.", call. = FALSE)
+    }
+    invisible(TRUE)
+  }
+
+  validate_positive_number(ui_font_size, "ui_font_size")
+  validate_positive_number(pill_font_size, "pill_font_size")
+  validate_positive_number(table_font_size, "table_font_size")
+  validate_positive_number(badge_font_size, "badge_font_size")
+  validate_positive_number(plot_default_height, "plot_default_height")
+  validate_positive_number(plot_min_height, "plot_min_height")
+  validate_positive_number(plot_max_width, "plot_max_width")
+  validate_positive_number(plot_font_size, "plot_font_size")
+  validate_positive_number(plot_title_size, "plot_title_size")
+  validate_positive_number(axis_title_size, "axis_title_size")
+  validate_positive_number(axis_tick_size, "axis_tick_size")
+  validate_positive_number(legend_font_size, "legend_font_size")
+
+  if (!is.null(plotly_layout) && !is.list(plotly_layout)) {
+    stop("`plotly_layout` must be NULL or a named list.", call. = FALSE)
+  }
+
+  if (!is.null(plotly_config) && !is.list(plotly_config)) {
+    stop("`plotly_config` must be NULL or a named list.", call. = FALSE)
+  }
   
   allowed_conditional_format_modes <- c(
     "none",
@@ -249,6 +338,20 @@ safePivot <- function(
     conditional_format_mode = conditional_format_mode,
     high_threshold = high_threshold,
     low_threshold = low_threshold,
+    ui_font_size = ui_font_size,
+    pill_font_size = pill_font_size,
+    table_font_size = table_font_size,
+    badge_font_size = badge_font_size,
+    plot_default_height = plot_default_height,
+    plot_min_height = plot_min_height,
+    plot_max_width = plot_max_width,
+    plot_font_size = plot_font_size,
+    plot_title_size = plot_title_size,
+    axis_title_size = axis_title_size,
+    axis_tick_size = axis_tick_size,
+    legend_font_size = legend_font_size,
+    plotly_layout = plotly_layout %||% list(),
+    plotly_config = plotly_config %||% list(),
     allowed_renderers = allowed_renderers,
     allowed_aggregators = allowed_aggregators
   )
@@ -259,6 +362,21 @@ safePivot <- function(
     width = width,
     height = height,
     package = "safePivot",
-    dependencies = safePivot_dependencies()
+    dependencies = safePivot_dependencies(),
+    sizingPolicy = htmlwidgets::sizingPolicy(
+      defaultWidth = 1000,
+      defaultHeight = 760,
+      
+      viewer.fill = TRUE,
+      viewer.padding = 0,
+      viewer.paneHeight = 760,
+      
+      browser.fill = TRUE,
+      browser.padding = 0,
+      browser.defaultHeight = 760,
+      
+      knitr.defaultWidth = 1000,
+      knitr.defaultHeight = 760
+    )
   )
 }

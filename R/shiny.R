@@ -1,7 +1,7 @@
 #' Shiny output binding for safePivot
 #'
 #' @param outputId Output variable name.
-#' @param width Width of the widget.
+#' @param width Width of the widget. e.g. "100%", "400px" or "80vh"
 #' @param height Height of the widget.
 #'
 #' @return A Shiny widget output object.

@@ -9,7 +9,7 @@ safePivotOutput(outputId, width = "100\%", height = "600px")
 \arguments{
 \item{outputId}{Output variable name.}
 
-\item{width}{Width of the widget.}
+\item{width}{Width of the widget. e.g. "100\%", "400px" or "80vh"}
 
 \item{height}{Height of the widget.}
 }
