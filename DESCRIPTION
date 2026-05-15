@@ -15,6 +15,7 @@ Imports:
     tidyr
 Suggests: 
     bslib,
+    covr,
     knitr,
     openxlsx,
     pkgdown,
