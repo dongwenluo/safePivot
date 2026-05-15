@@ -26,9 +26,23 @@ safePivot(
   conditional_format_mode = "both",
   high_threshold = 0.85,
   low_threshold = 0.15,
+  ui_font_size = 16,
+  pill_font_size = 17,
+  table_font_size = 18,
+  badge_font_size = 12,
+  plot_default_height = 620,
+  plot_min_height = 520,
+  plot_max_width = 1150,
+  plot_font_size = 16,
+  plot_title_size = 20,
+  axis_title_size = 16,
+  axis_tick_size = 14,
+  legend_font_size = 14,
+  plotly_layout = NULL,
+  plotly_config = NULL,
   max_rows = 50000,
   width = "100%",
-  height = 600
+  height = NULL
 )
 ```
 
@@ -57,8 +71,11 @@ safePivot(
 
 - renderer:
 
-  Initial renderer name. Supported values are `"Table"`, `"Heatmap"`,
-  `"Row Heatmap"`, and `"Col Heatmap"`.
+  Initial renderer. One of `"Table"`, `"Heatmap"`, `"Row Heatmap"`,
+  `"Col Heatmap"`, `"Bar Chart"`, `"Stacked Bar Chart"`,
+  `"Horizontal Bar Chart"`, `"Horizontal Stacked Bar Chart"`,
+  `"Line Chart"`, `"Area Chart"`, `"Scatter Chart"`, or
+  `"Multiple Pie Chart"`.
 
 - missing_label:
 
@@ -116,6 +133,30 @@ safePivot(
 
   Relative threshold for low-value cell formatting. Values are scaled
   from 0 to 1 within the displayed pivot table.
+
+- ui_font_size, pill_font_size, table_font_size, badge_font_size:
+
+  Font sizes used by the browser UI, draggable variable pills, pivot
+  table, and type badges.
+
+- plot_default_height, plot_min_height, plot_max_width:
+
+  Default Plotly chart sizing controls used by chart renderers.
+
+- plot_font_size, plot_title_size, axis_title_size, axis_tick_size,
+  legend_font_size:
+
+  Font sizes used by Plotly chart renderers.
+
+- plotly_layout:
+
+  Optional named list of Plotly layout values merged into the default
+  chart layout.
+
+- plotly_config:
+
+  Optional named list of Plotly config values merged into the default
+  chart config.
 
 - max_rows:
 

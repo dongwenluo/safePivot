@@ -68,9 +68,23 @@ ordering, heatmap renderers, conditional formatting, and Shiny support.</p>
 <span>  conditional_format_mode <span class="op">=</span> <span class="st">"both"</span>,</span>
 <span>  high_threshold <span class="op">=</span> <span class="fl">0.85</span>,</span>
 <span>  low_threshold <span class="op">=</span> <span class="fl">0.15</span>,</span>
+<span>  ui_font_size <span class="op">=</span> <span class="fl">16</span>,</span>
+<span>  pill_font_size <span class="op">=</span> <span class="fl">17</span>,</span>
+<span>  table_font_size <span class="op">=</span> <span class="fl">18</span>,</span>
+<span>  badge_font_size <span class="op">=</span> <span class="fl">12</span>,</span>
+<span>  plot_default_height <span class="op">=</span> <span class="fl">620</span>,</span>
+<span>  plot_min_height <span class="op">=</span> <span class="fl">520</span>,</span>
+<span>  plot_max_width <span class="op">=</span> <span class="fl">1150</span>,</span>
+<span>  plot_font_size <span class="op">=</span> <span class="fl">16</span>,</span>
+<span>  plot_title_size <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  axis_title_size <span class="op">=</span> <span class="fl">16</span>,</span>
+<span>  axis_tick_size <span class="op">=</span> <span class="fl">14</span>,</span>
+<span>  legend_font_size <span class="op">=</span> <span class="fl">14</span>,</span>
+<span>  plotly_layout <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  plotly_config <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  max_rows <span class="op">=</span> <span class="fl">50000</span>,</span>
 <span>  width <span class="op">=</span> <span class="st">"100%"</span>,</span>
-<span>  height <span class="op">=</span> <span class="fl">600</span></span>
+<span>  height <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -99,8 +113,11 @@ ordering, heatmap renderers, conditional formatting, and Shiny support.</p>
 
 
 <dt id="arg-renderer">renderer<a class="anchor" aria-label="anchor" href="#arg-renderer"></a></dt>
-<dd><p>Initial renderer name. Supported values are <code>"Table"</code>,
-<code>"Heatmap"</code>, <code>"Row Heatmap"</code>, and <code>"Col Heatmap"</code>.</p></dd>
+<dd><p>Initial renderer. One of <code>"Table"</code>, <code>"Heatmap"</code>,
+<code>"Row Heatmap"</code>, <code>"Col Heatmap"</code>, <code>"Bar Chart"</code>,
+<code>"Stacked Bar Chart"</code>, <code>"Horizontal Bar Chart"</code>,
+<code>"Horizontal Stacked Bar Chart"</code>, <code>"Line Chart"</code>, <code>"Area Chart"</code>,
+<code>"Scatter Chart"</code>, or <code>"Multiple Pie Chart"</code>.</p></dd>
 
 
 <dt id="arg-missing-label">missing_label<a class="anchor" aria-label="anchor" href="#arg-missing-label"></a></dt>
@@ -158,6 +175,30 @@ Values are scaled from 0 to 1 within the displayed pivot table.</p></dd>
 <dt id="arg-low-threshold">low_threshold<a class="anchor" aria-label="anchor" href="#arg-low-threshold"></a></dt>
 <dd><p>Relative threshold for low-value cell formatting.
 Values are scaled from 0 to 1 within the displayed pivot table.</p></dd>
+
+
+<dt id="arg-ui-font-size-pill-font-size-table-font-size-badge-font-size">ui_font_size, pill_font_size, table_font_size, badge_font_size<a class="anchor" aria-label="anchor" href="#arg-ui-font-size-pill-font-size-table-font-size-badge-font-size"></a></dt>
+<dd><p>Font sizes
+used by the browser UI, draggable variable pills, pivot table, and type badges.</p></dd>
+
+
+<dt id="arg-plot-default-height-plot-min-height-plot-max-width">plot_default_height, plot_min_height, plot_max_width<a class="anchor" aria-label="anchor" href="#arg-plot-default-height-plot-min-height-plot-max-width"></a></dt>
+<dd><p>Default Plotly chart
+sizing controls used by chart renderers.</p></dd>
+
+
+<dt id="arg-plot-font-size-plot-title-size-axis-title-size-axis-tick-size-legend-font-size">plot_font_size, plot_title_size, axis_title_size, axis_tick_size, legend_font_size<a class="anchor" aria-label="anchor" href="#arg-plot-font-size-plot-title-size-axis-title-size-axis-tick-size-legend-font-size"></a></dt>
+<dd><p>Font sizes used by Plotly chart renderers.</p></dd>
+
+
+<dt id="arg-plotly-layout">plotly_layout<a class="anchor" aria-label="anchor" href="#arg-plotly-layout"></a></dt>
+<dd><p>Optional named list of Plotly layout values merged into
+the default chart layout.</p></dd>
+
+
+<dt id="arg-plotly-config">plotly_config<a class="anchor" aria-label="anchor" href="#arg-plotly-config"></a></dt>
+<dd><p>Optional named list of Plotly config values merged into
+the default chart config.</p></dd>
 
 
 <dt id="arg-max-rows">max_rows<a class="anchor" aria-label="anchor" href="#arg-max-rows"></a></dt>

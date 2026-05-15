@@ -16,7 +16,7 @@ safePivotOutput(outputId, width = "100%", height = "600px")
 
 - width:
 
-  Width of the widget.
+  Width of the widget. e.g. "100%", "400px" or "80vh"
 
 - height:
 
