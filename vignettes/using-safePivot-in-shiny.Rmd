@@ -7,7 +7,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -18,8 +18,8 @@ knitr::opts_chunk$set(
 # Overview
 
 `safePivot` provides a drag-and-drop pivot-table widget for Shiny applications.
-The browser-side widget is used for interaction, while R is used for reproducible
-computation and export.
+The browser-side widget is used for interactive exploration, while R is used for
+reproducible computation and export.
 
 The recommended Shiny workflow is:
 
@@ -35,13 +35,13 @@ from the original data.
 
 # Minimal Shiny app
 
-```{r}
+```{r shiny-minimal}
 library(shiny)
 library(safePivot)
 
 ui <- fluidPage(
   titlePanel("safePivot Shiny example"),
-  safePivotOutput("pivot", height = "650px")
+  safePivotOutput("pivot", height = "700px")
 )
 
 server <- function(input, output, session) {
@@ -60,18 +60,84 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 ```
 
+# Renderer selector
+
+The renderer can be controlled by a Shiny input. Table and heatmap renderers are
+good for data tabulation, while Plotly renderers are useful for quick visual
+summaries.
+
+```{r shiny-renderer-selector}
+library(shiny)
+library(bslib)
+library(safePivot)
+
+renderer_choices <- c(
+  "Table",
+  "Heatmap",
+  "Row Heatmap",
+  "Col Heatmap",
+  "Bar Chart",
+  "Stacked Bar Chart",
+  "Horizontal Bar Chart",
+  "Horizontal Stacked Bar Chart",
+  "Line Chart",
+  "Area Chart",
+  "Scatter Chart",
+  "Multiple Pie Chart"
+)
+
+ui <- page_fluid(
+  titlePanel("safePivot renderer example"),
+  layout_sidebar(
+    sidebar = sidebar(
+      selectInput(
+        "renderer",
+        "Renderer",
+        choices = renderer_choices,
+        selected = "Table"
+      )
+    ),
+    safePivotOutput("pivot", height = "750px")
+  )
+)
+
+server <- function(input, output, session) {
+  output$pivot <- renderSafePivot({
+    safePivot(
+      iris,
+      rows = "Species",
+      cols = "Petal.Width",
+      vals = "Sepal.Length",
+      aggregator = "Median",
+      renderer = input$renderer,
+      heatmap_palette = "green",
+      show_type_badges = TRUE
+    )
+  })
+}
+
+shinyApp(ui, server)
+```
+
 # Heatmap and conditional formatting
 
-`safePivot` supports table and heatmap renderers, readable heatmap palettes, and
+`safePivot` supports table renderers, heatmap renderers, heatmap palettes, and
 browser-side conditional formatting.
 
-```{r}
+For normal `Table` output, conditional formatting can be used to highlight high
+or low values, empty cells, and zero cells.
+
+For `Heatmap`, `Row Heatmap`, and `Col Heatmap`, SafePivot intentionally disables
+its extra cell-colour conditional formatting so that the heatmap palette is not
+overwritten.
+
+```{r shiny-heatmap}
 library(shiny)
 library(safePivot)
 
 ui <- fluidPage(
   titlePanel("safePivot heatmap example"),
-  safePivotOutput("pivot", height = "650px")
+  safePivotOutput("pivot", height = "700px")
 )
 
 server <- function(input, output, session) {
@@ -83,9 +149,7 @@ server <- function(input, output, session) {
       vals = "mpg",
       aggregator = "Mean",
       renderer = "Heatmap",
-      heatmap_palette = "blue_white_red",
-      conditional_format = TRUE,
-      conditional_format_mode = "both",
+      heatmap_palette = "green",
       show_row_totals = TRUE,
       show_col_totals = TRUE
     )
@@ -103,7 +167,7 @@ Available heatmap palettes include:
 - `"blue_white_red"`
 - `"green_red"`
 
-Available conditional formatting modes are:
+Available conditional formatting modes for table output are:
 
 | Mode | Behaviour |
 |---|---|
@@ -112,62 +176,118 @@ Available conditional formatting modes are:
 | `"data_quality"` | Highlight empty cells and zero cells |
 | `"both"` | Combine value and data-quality formatting |
 
-The recommended visual priority is:
-
-```text
-empty / unavailable cells > zero cells > heatmap or high-low value styling
-```
-
-# Export the current pivot table
-
-The key helper for Shiny export is `safe_pivot_compute_from_config()`.
+# Capturing the current pivot configuration
 
 The widget sends the current drag-and-drop state to Shiny as:
+
+```r
+input$<outputId>_config
+```
+
+For example, if the output ID is `"pivot"`, the current configuration is stored
+in:
 
 ```r
 input$pivot_config
 ```
 
-where `pivot` is the output ID used in:
+The configuration includes the current row fields, column fields, value fields,
+aggregator, renderer, inclusions, and exclusions.
 
-```r
-safePivotOutput("pivot")
-```
-
-`safe_pivot_compute_from_config()` also accepts default rows, columns, values,
-and aggregator settings. These defaults are important because `input$pivot_config`
-may be `NULL` before the widget sends its first configuration back to Shiny.
-
-The following app exports the current pivot result to CSV, Excel, RDS, and RData.
-
-```{r}
+```{r shiny-config-preview}
 library(shiny)
 library(safePivot)
 
 ui <- fluidPage(
-  titlePanel("safePivot export example"),
-
+  titlePanel("safePivot config preview"),
   safePivotOutput("pivot", height = "650px"),
-
   hr(),
-
-  fluidRow(
-    column(3, downloadButton("download_csv", "Download CSV")),
-    column(3, downloadButton("download_xlsx", "Download Excel")),
-    column(3, downloadButton("download_rds", "Download RDS")),
-    column(3, downloadButton("download_rdata", "Download RData"))
-  ),
-
-  hr(),
-
   h4("Current pivot configuration"),
   verbatimTextOutput("pivot_config")
 )
 
 server <- function(input, output, session) {
-  dat <- reactive({
-    iris
+  output$pivot <- renderSafePivot({
+    safePivot(
+      iris,
+      rows = "Species",
+      vals = "Sepal.Length",
+      aggregator = "Median",
+      renderer = "Table",
+      show_type_badges = TRUE
+    )
   })
+
+  output$pivot_config <- renderPrint({
+    input$pivot_config
+  })
+}
+
+shinyApp(ui, server)
+```
+
+# Recomputing the current pivot in R
+
+The key helper for Shiny export is `safe_pivot_compute_from_config()`.
+It accepts default rows, columns, values, and aggregator settings. These defaults
+are important because `input$pivot_config` may be `NULL` before the widget sends
+its first configuration back to Shiny.
+
+```{r shiny-compute-from-config}
+current_pivot <- reactive({
+  safe_pivot_compute_from_config(
+    data = iris,
+    config = input$pivot_config,
+    default_rows = "Species",
+    default_cols = NULL,
+    default_vals = "Sepal.Length",
+    default_aggregator = "Median"
+  )
+})
+```
+
+# Export the current pivot table
+
+The following app exports the current pivot result to CSV, Excel, RDS, and RData.
+
+```{r shiny-export-complete}
+library(shiny)
+library(bslib)
+library(safePivot)
+
+ui <- page_fluid(
+  titlePanel("safePivot export example"),
+
+  layout_sidebar(
+    sidebar = sidebar(
+      selectInput(
+        "renderer",
+        "Renderer",
+        choices = c(
+          "Table",
+          "Heatmap",
+          "Row Heatmap",
+          "Col Heatmap",
+          "Bar Chart",
+          "Stacked Bar Chart"
+        ),
+        selected = "Table"
+      ),
+      downloadButton("download_csv", "Download CSV"),
+      downloadButton("download_xlsx", "Download Excel"),
+      downloadButton("download_rds", "Download RDS"),
+      downloadButton("download_rdata", "Download RData")
+    ),
+
+    safePivotOutput("pivot", height = "750px"),
+    hr(),
+    h4("Current pivot configuration"),
+    verbatimTextOutput("pivot_config")
+  )
+)
+
+server <- function(input, output, session) {
+  dat <- reactive(iris)
 
   output$pivot <- renderSafePivot({
     safePivot(
@@ -175,7 +295,8 @@ server <- function(input, output, session) {
       rows = "Species",
       vals = "Sepal.Length",
       aggregator = "Median",
-      renderer = "Table",
+      renderer = input$renderer,
+      heatmap_palette = "green",
       show_type_badges = TRUE,
       conditional_format = TRUE,
       conditional_format_mode = "both"
@@ -202,11 +323,7 @@ server <- function(input, output, session) {
       "safePivot_result.csv"
     },
     content = function(file) {
-      safe_pivot_write_csv(
-        current_pivot(),
-        file,
-        which = "wide"
-      )
+      safe_pivot_write_csv(current_pivot(), file, which = "wide")
     }
   )
 
@@ -221,7 +338,7 @@ server <- function(input, output, session) {
         include_heatmap = TRUE,
         include_conditional_format = TRUE,
         conditional_format_mode = "both",
-        heatmap_palette = "blue_white_red"
+        heatmap_palette = "green"
       )
     }
   )
@@ -231,10 +348,7 @@ server <- function(input, output, session) {
       "safePivot_result.rds"
     },
     content = function(file) {
-      safe_pivot_write_rds(
-        current_pivot(),
-        file
-      )
+      safe_pivot_write_rds(current_pivot(), file)
     }
   )
 
@@ -261,9 +375,8 @@ A browser pivot table is interactive. Users can move variables between rows,
 columns, and values, and they can change the aggregator.
 
 Instead of trying to parse the displayed HTML table, `safePivot` captures the
-current configuration and recomputes the result in R.
-
-This gives three advantages:
+current configuration and recomputes the result in R. This gives three
+advantages:
 
 - exported results are generated from the original data;
 - export logic is testable in R;
@@ -285,7 +398,7 @@ observed zero     = a record exists and the selected numeric value is 0
 
 For example:
 
-```r
+```{r data-quality-example}
 quality_dat <- data.frame(
   row = c("A", "A", "A", "B", "B", "C"),
   col = c("X", "X", "Y", "X", "Y", "X"),
@@ -304,14 +417,14 @@ safe_pivot_compute(
 In this example:
 
 ```text
-A × Y has one observed missing value, so N missing = 1.
-C × X has one observed missing value, so N missing = 1.
-C × Y has no records, so it remains NA.
+A x Y has one observed missing value, so N missing = 1.
+C x X has one observed missing value, so N missing = 1.
+C x Y has no records, so it remains NA.
 ```
 
 Zero percentages use numeric non-missing values as the denominator:
 
-```r
+```{r zero-percent-example}
 safe_pivot_compute(
   quality_dat,
   rows = "row",
@@ -324,17 +437,17 @@ safe_pivot_compute(
 So:
 
 ```text
-A × X has values 0 and 1, so Zero % within Cell = 50.
-A × Y has only NA, so Zero % within Cell = NA.
-C × X has only NA, so Zero % within Cell = NA.
-C × Y has no records, so it remains NA.
+A x X has values 0 and 1, so Zero % within Cell = 50.
+A x Y has only NA, so Zero % within Cell = NA.
+C x X has only NA, so Zero % within Cell = NA.
+C x Y has no records, so it remains NA.
 ```
 
 # Styled Excel export
 
 Excel export can preserve safePivot-style visual cues.
 
-```{r}
+```{r styled-excel-export}
 res <- safe_pivot_compute(
   quality_dat,
   rows = "row",
@@ -349,21 +462,15 @@ safe_pivot_write_xlsx(
   include_heatmap = TRUE,
   include_conditional_format = TRUE,
   conditional_format_mode = "both",
-  heatmap_palette = "blue_white_red"
+  heatmap_palette = "green"
 )
-```
-
-The recommended priority is:
-
-```text
-empty / unavailable cells > zero cells > heatmap or high-low value styling
 ```
 
 # Variable type badges
 
 `safePivot` can show data-type badges beside draggable variable names.
 
-```{r}
+```{r type-badge-example}
 badge_dat <- data.frame(
   id = 1:3,
   score = c(1.2, 3.4, 5.6),
@@ -400,7 +507,7 @@ For ordered factors, always set levels explicitly if the order matters.
 
 You can control totals from R:
 
-```{r}
+```{r totals-example}
 safePivot(
   mtcars,
   rows = "cyl",
@@ -417,7 +524,7 @@ safePivot(
 
 Useful aggregators include:
 
-```{r}
+```{r aggregator-list}
 c(
   "Count",
   "Count unique",
@@ -455,6 +562,23 @@ c(
   "Count as Fraction of Columns"
 )
 ```
+
+# Output height
+
+In Shiny, set the widget height explicitly:
+
+```r
+safePivotOutput("pivot", height = "750px")
+```
+
+or:
+
+```r
+safePivotOutput("pivot", height = "80vh")
+```
+
+For RStudio Viewer and browser preview, SafePivot uses the htmlwidgets sizing
+policy in the widget definition.
 
 # Notes for larger data
 
