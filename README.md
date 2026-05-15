@@ -1,9 +1,11 @@
 
+<!-- README.md is generated from README.Rmd. Please edit README.Rmd. -->
+
+# safePivot
+
 [![R-CMD-check](https://github.com/dongwenluo/safePivot/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/dongwenluo/safePivot/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
 coverage](https://codecov.io/gh/dongwenluo/safePivot/branch/main/graph/badge.svg)](https://app.codecov.io/gh/dongwenluo/safePivot?branch=main)
-
-# safePivot
 
 `safePivot` is an R htmlwidget for safer interactive drag-and-drop pivot
 tables. It wraps PivotTable.js and adds R-focused safeguards for
@@ -14,39 +16,46 @@ The main idea is simple:
 
 1.  use the browser for interactive pivot-table exploration;
 2.  capture the current pivot configuration in Shiny;
-3.  recompute the result in R for export;
-4.  keep missing values, zero values, and empty pivot cells clearly
-    separated.
+3.  recompute the same pivot result in R;
+4.  export the R-computed result to CSV, Excel, RDS, or RData.
+
+`safePivot` is especially useful when empty cells, observed missing
+values, and observed zero values must stay clearly separated.
 
 ## Installation
 
+Install the development version from GitHub:
+
 ``` r
-# Development version
-install.packages("remotes")
+# install.packages("remotes")
 remotes::install_github("dongwenluo/safePivot")
+```
+
+Load the package:
+
+``` r
+library(safePivot)
 ```
 
 ## Key features
 
-- Interactive PivotTable.js drag-and-drop UI
-- Safer R-side pivot computation with `safe_pivot_compute()`
-- Shiny config capture with `input$<outputId>_config`
-- Config-based export with `safe_pivot_compute_from_config()`
-- CSV, Excel, RDS, and RData export helpers
-- Explicit missing-value, non-missing, zero, and non-zero aggregators
-- Within-cell, row, column, and total percentage aggregators
-- Sum/count fraction aggregators with explicit denominators
-- R factor-level ordering, including ordered factors when levels are
-  supplied correctly
-- Data-type badges for draggable variables
-- Browser conditional formatting modes
-- Styled Excel export with heatmap and data-quality formatting
+- Interactive PivotTable.js drag-and-drop UI.
+- Safe R-side pivot computation with `safe_pivot_compute()`.
+- Shiny config capture with `input$<outputId>_config`.
+- Config-based export with `safe_pivot_compute_from_config()`.
+- CSV, Excel, RDS, and RData export helpers.
+- Explicit missing, non-missing, zero, and non-zero aggregators.
+- Within-cell, row, column, and total percentage aggregators.
+- Sum/count fraction aggregators with explicit denominators.
+- R factor-level ordering.
+- Data-type badges for draggable variables.
+- Browser-side conditional formatting for table output.
+- Heatmap renderers with selectable palettes.
+- Lightweight Plotly chart renderers.
 
 ## Basic use
 
 ``` r
-library(safePivot)
-
 safePivot(
   iris,
   rows = "Species",
@@ -60,25 +69,71 @@ safePivot(
 
 ``` r
 safePivot(
-  mtcars,
-  rows = "cyl",
-  cols = "gear",
-  vals = "mpg",
-  aggregator = "Mean",
+  iris,
+  rows = "Species",
+  cols = "Petal.Width",
+  vals = "Sepal.Length",
+  aggregator = "Median",
   renderer = "Heatmap",
-  heatmap_palette = "blue",
-  conditional_format = TRUE,
-  conditional_format_mode = "both"
+  heatmap_palette = "green"
 )
 ```
 
 Available heatmap palettes are:
 
-- `"blue"`
-- `"yellow_orange"`
-- `"green"`
-- `"blue_white_red"`
-- `"green_red"`
+``` r
+"blue"
+"yellow_orange"
+"green"
+"blue_white_red"
+"green_red"
+```
+
+Available heatmap renderers are:
+
+``` r
+"Heatmap"
+"Row Heatmap"
+"Col Heatmap"
+```
+
+Browser-side conditional formatting is intentionally disabled for
+heatmap renderers so that heatmap palettes are not overwritten by
+SafePivot table-cell formatting classes.
+
+## Lightweight Plotly charts
+
+`safePivot` includes lightweight Plotly renderers for quick visual
+summaries:
+
+``` r
+safePivot(
+  iris,
+  rows = "Species",
+  cols = "Petal.Width",
+  vals = "Sepal.Length",
+  aggregator = "Mean",
+  renderer = "Bar Chart",
+  plot_height = 620
+)
+```
+
+Supported chart renderers include:
+
+``` r
+"Horizontal Bar Chart"
+"Horizontal Stacked Bar Chart"
+"Bar Chart"
+"Stacked Bar Chart"
+"Line Chart"
+"Area Chart"
+"Scatter Chart"
+"Multiple Pie Chart"
+```
+
+Treemap is intentionally not included in the core package because it
+requires a larger Plotly bundle and extra hierarchy-specific renderer
+logic.
 
 ## Data-type badges
 
@@ -105,6 +160,7 @@ safePivot(
   rows = "Species",
   vals = "Sepal.Length",
   aggregator = "Median",
+  renderer = "Table",
   show_type_badges = TRUE
 )
 ```
@@ -112,8 +168,7 @@ safePivot(
 ## Factor order
 
 If a variable is an R factor, `safePivot` can respect its factor-level
-order. For ordered factors, make sure the levels are specified in the
-order you want.
+order.
 
 ``` r
 iris2 <- iris
@@ -132,8 +187,8 @@ safePivot(
 )
 ```
 
-For ordered factors, avoid relying on the default alphabetical level
-order:
+For ordered factors, define levels explicitly instead of relying on
+alphabetical order:
 
 ``` r
 ordered_dat <- data.frame(
@@ -172,10 +227,10 @@ quality_dat <- data.frame(
 
 In this data:
 
-- `A × X` has two observed numeric values: `0` and `1`.
-- `A × Y` has one observed missing value: `NA`.
-- `C × X` has one observed missing value: `NA`.
-- `C × Y` has no records at all, so it is an empty pivot cell.
+- `A x X` has two observed numeric values: `0` and `1`.
+- `A x Y` has one observed missing value: `NA`.
+- `C x X` has one observed missing value: `NA`.
+- `C x Y` has no records at all, so it is an empty pivot cell.
 
 ### Count-style aggregators
 
@@ -206,7 +261,7 @@ For a cell with values:
 c(0, 1, NA)
 ```
 
-safePivot uses:
+`safePivot` uses:
 
 ``` text
 Count                 = 3
@@ -276,16 +331,32 @@ safe_pivot_compute(
 The total numeric sum is `1 + 3 + 2 + 4 = 10`, so the result is:
 
 ``` text
-A × X = 1 / 10 * 100 = 10
-A × Y = 3 / 10 * 100 = 30
-B × X = 2 / 10 * 100 = 20
-B × Y = 4 / 10 * 100 = 40
+A x X = 1 / 10 * 100 = 10
+A x Y = 3 / 10 * 100 = 30
+B x X = 2 / 10 * 100 = 20
+B x Y = 4 / 10 * 100 = 40
+```
+
+The count-fraction case that previously failed is now covered by
+regression tests:
+
+``` r
+safe_pivot_compute(
+  iris,
+  rows = "Species",
+  vals = "Sepal.Length",
+  aggregator = "Count as Fraction of Total"
+)$wide
+#>      Species   .value
+#> 1     setosa 33.33333
+#> 2 versicolor 33.33333
+#> 3  virginica 33.33333
 ```
 
 ## Conditional formatting
 
-`safePivot` supports browser-side conditional formatting. The same ideas
-are also available in styled Excel export.
+`safePivot` supports browser-side conditional formatting for normal
+table output.
 
 | Mode             | Behaviour                                 |
 |------------------|-------------------------------------------|
@@ -307,16 +378,14 @@ safePivot(
 )
 ```
 
-The recommended visual priority is:
-
-``` text
-empty / unavailable cells > zero cells > heatmap or high-low value styling
-```
+For heatmap renderers, use `heatmap_palette` rather than
+`conditional_format_mode`. This keeps the heatmap colour scale clear and
+avoids overwriting heatmap colours.
 
 ## Styled Excel export
 
 Use `safe_pivot_write_xlsx()` to export the R-computed pivot table to
-Excel.
+Excel. Excel export requires the optional package `openxlsx`.
 
 ``` r
 res <- safe_pivot_compute(
@@ -348,14 +417,35 @@ but let R handle export. This avoids scraping the displayed HTML table.
 
 ``` r
 library(shiny)
+library(bslib)
 library(safePivot)
 
-ui <- fluidPage(
+ui <- page_fluid(
   titlePanel("safePivot export example"),
-  safePivotOutput("pivot", height = "650px"),
-  hr(),
-  downloadButton("download_csv", "Download CSV"),
-  downloadButton("download_xlsx", "Download Excel")
+
+  layout_sidebar(
+    sidebar = sidebar(
+      selectInput(
+        "renderer",
+        "Renderer",
+        choices = c(
+          "Table",
+          "Heatmap",
+          "Row Heatmap",
+          "Col Heatmap",
+          "Bar Chart",
+          "Stacked Bar Chart",
+          "Line Chart",
+          "Area Chart"
+        ),
+        selected = "Table"
+      ),
+      downloadButton("download_csv", "Download CSV"),
+      downloadButton("download_xlsx", "Download Excel")
+    ),
+
+    safePivotOutput("pivot", height = "750px")
+  )
 )
 
 server <- function(input, output, session) {
@@ -367,7 +457,8 @@ server <- function(input, output, session) {
       rows = "Species",
       vals = "Sepal.Length",
       aggregator = "Median",
-      renderer = "Table",
+      renderer = input$renderer,
+      heatmap_palette = "green",
       show_type_badges = TRUE,
       conditional_format_mode = "both"
     )
@@ -407,6 +498,9 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 ```
 
+`input$pivot_config` stores the current drag-and-drop state, including
+rows, columns, values, aggregator, renderer, inclusions, and exclusions.
+
 ## Aggregator summary
 
 | Type | Examples |
@@ -431,6 +525,23 @@ A practical workflow is:
 3.  use `safe_pivot_compute_from_config()` for export;
 4.  export only the current pivot result.
 
+## Development checks
+
+Before pushing changes, run:
+
+``` r
+devtools::document()
+devtools::load_all(reset = TRUE)
+devtools::test()
+devtools::check()
+```
+
+To rebuild this README after editing `README.Rmd`, run:
+
+``` r
+devtools::build_readme()
+```
+
 ## Related work and acknowledgements
 
 `safePivot` is inspired by `rpivotTable`, an R htmlwidget that brings
@@ -444,3 +555,7 @@ R-side CSV/Excel/RDS/RData export.
 We also acknowledge PivotTable.js by Nicolas Kruchten, the underlying
 JavaScript pivot-table library used for the interactive browser-side
 pivot UI.
+
+## License
+
+MIT
