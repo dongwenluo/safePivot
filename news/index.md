@@ -1,6 +1,6 @@
 # Changelog
 
-## safePivot 0.1.0.9000
+## safePivot 0.1.1
 
 ### Aggregators
 
