@@ -50,7 +50,7 @@ safePivot_dependencies <- function() {
     
     htmltools::htmlDependency(
       name = "safePivot-css",
-      version = "0.1.0",
+      version = "0.1.1",
       src = c(file = "htmlwidgets/lib/safePivot"),
       package = "safePivot",
       stylesheet = "safePivot.css",
