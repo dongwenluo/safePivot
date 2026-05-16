@@ -3,30 +3,65 @@ url: https://dongwenluo.github.io/safePivot/
 template:
   bootstrap: 5
   bootswatch: flatly
+  bslib:
+    primary: "#000080"
+    border-radius: 0.5rem
+    btn-border-radius: 0.5rem
+
+home:
+  title: Safe drag-and-drop pivot tables for Shiny and R
+  description: >
+    SafePivot provides a drag-and-drop pivot table htmlwidget for R and Shiny
+    with robust aggregators, missing-value summaries, zero-value summaries,
+    heatmaps, lightweight Plotly charts, Shiny config capture, and export helpers.
 
 navbar:
   structure:
     left: [intro, reference, articles, news]
     right: [search, github]
+  components:
+    intro:
+      text: Get started
+      href: articles/safePivot.html
+    articles:
+      text: Articles
+      menu:
+      - text: Getting started with safePivot
+        href: articles/safePivot.html
+      - text: Using safePivot in Shiny
+        href: articles/using-safePivot-in-shiny.html
+    news:
+      text: News
+      href: news/index.html
 
 reference:
-  - title: Widget
-    contents:
-      - safePivot
-      - safePivotOutput
-      - renderSafePivot
+- title: Main widget
+  contents:
+  - safePivot
+  - safePivotOutput
+  - renderSafePivot
 
-  - title: Compute and export
-    contents:
-      - safe_pivot_compute
-      - safe_pivot_compute_from_config
-      - safe_pivot_write_csv
-      - safe_pivot_write_xlsx
-      - safe_pivot_write_rds
-      - safe_pivot_write_rdata
+- title: R-side pivot computation
+  contents:
+  - safe_pivot_compute
+  - safe_pivot_compute_from_config
+
+- title: Export helpers
+  contents:
+  - starts_with("safe_pivot_write_")
+
+- title: Helper functions
+  contents:
+  - starts_with("safe_pivot_allowed")
+  - starts_with("safe_pivot_factor")
+  - starts_with("safe_pivot_variable")
 
 articles:
-  - title: Shiny
-    navbar: ~
-    contents:
-      - using-safePivot-in-shiny
+- title: Articles
+  navbar: ~
+  contents:
+  - safePivot
+  - using-safePivot-in-shiny
+
+news:
+  cran_dates: false
