@@ -15,6 +15,7 @@
 ">
 <meta property="og:description" content="SafePivot provides a drag-and-drop pivot table htmlwidget for R and Shiny with robust aggregators, missing-value summaries, zero-value summaries, heatmaps, lightweight Plotly charts, Shiny config capture, and export helpers.
 ">
+<meta property="og:image" content="https://dongwenluo.github.io/safePivot/logo.png">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -57,8 +58,10 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="safepivot">safePivot<a class="anchor" aria-label="anchor" href="#safepivot"></a>
-</h1></div>
+<div class="page-header">
+<img src="logo.png" class="logo" alt=""><h1 id="safepivot">safePivot<a class="anchor" aria-label="anchor" href="#safepivot"></a>
+</h1>
+</div>
 <p><a href="https://github.com/dongwenluo/safePivot/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/dongwenluo/safePivot/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a> <a href="https://app.codecov.io/gh/dongwenluo/safePivot?branch=main" class="external-link"><img src="https://codecov.io/gh/dongwenluo/safePivot/branch/main/graph/badge.svg" alt="Codecov test coverage"></a></p>
 <p><code>safePivot</code> is an R htmlwidget for safer interactive drag-and-drop pivot tables. It wraps PivotTable.js and adds R-focused safeguards for exploratory data analysis, Shiny export, and reproducible reporting workflows.</p>
 <p>The main idea is simple:</p>
@@ -812,19 +815,6 @@ B x Y = 4 / 10 * 100 = 40</code></pre>
 </ol>
 </div>
 <div class="section level2">
-<h2 id="development-checks">Development checks<a class="anchor" aria-label="anchor" href="#development-checks"></a>
-</h2>
-<p>Before pushing changes, run:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">document</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">load_all</span><span class="op">(</span>reset <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">test</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">check</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>To rebuild this README after editing <code>README.Rmd</code>, run:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">build_readme</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
 <h2 id="related-work-and-acknowledgements">Related work and acknowledgements<a class="anchor" aria-label="anchor" href="#related-work-and-acknowledgements"></a>
 </h2>
 <p><code>safePivot</code> is inspired by <code>rpivotTable</code>, an R htmlwidget that brings PivotTable.js / pivottable.js drag-and-drop pivot tables to R.</p>
@@ -845,15 +835,6 @@ B x Y = 4 / 10 * 100 = 40</code></pre>
 </ul>
 </div>
 
-<div class="license">
-<h2 data-toc-skip>License</h2>
-<ul class="list-unstyled">
-<li><a href="LICENSE.html">Full license</a></li>
-<li><small><a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
-</ul>
-</div>
-
-
 <div class="citation">
 <h2 data-toc-skip>Citation</h2>
 <ul class="list-unstyled">
@@ -867,8 +848,6 @@ B x Y = 4 / 10 * 100 = 40</code></pre>
 <li>Dongwen Luo <br><small class="roles"> Author, maintainer </small>   </li>
 </ul>
 </div>
-
-
 
   </aside>
 </div>
