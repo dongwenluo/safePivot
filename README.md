@@ -525,23 +525,6 @@ A practical workflow is:
 3.  use `safe_pivot_compute_from_config()` for export;
 4.  export only the current pivot result.
 
-## Development checks
-
-Before pushing changes, run:
-
-``` r
-devtools::document()
-devtools::load_all(reset = TRUE)
-devtools::test()
-devtools::check()
-```
-
-To rebuild this README after editing `README.Rmd`, run:
-
-``` r
-devtools::build_readme()
-```
-
 ## Related work and acknowledgements
 
 `safePivot` is inspired by `rpivotTable`, an R htmlwidget that brings

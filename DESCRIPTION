@@ -7,7 +7,6 @@ Description: Provides a safe PivotTable.js htmlwidget for interactive drag-and-d
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Imports: 
     dplyr,
     htmltools,
@@ -23,3 +22,4 @@ Config/testthat/edition: 3
 URL: https://dongwenluo.github.io/safePivot/, https://github.com/dongwenluo/safePivot
 BugReports: https://github.com/dongwenluo/safePivot/issues
 VignetteBuilder: knitr
+Config/roxygen2/version: 8.0.0

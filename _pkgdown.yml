@@ -9,6 +9,8 @@ template:
     btn-border-radius: 0.5rem
 
 home:
+  sidebar:
+    structure: [links, citation, authors]
   title: Safe drag-and-drop pivot tables for Shiny and R
   description: >
     SafePivot provides a drag-and-drop pivot table htmlwidget for R and Shiny

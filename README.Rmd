@@ -3,7 +3,6 @@ output: github_document
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit README.Rmd. -->
-
 # safePivot
 
 [![R-CMD-check](https://github.com/dongwenluo/safePivot/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/dongwenluo/safePivot/actions/workflows/R-CMD-check.yaml)
@@ -523,23 +522,6 @@ A practical workflow is:
 2. send the reduced data to `safePivot()`;
 3. use `safe_pivot_compute_from_config()` for export;
 4. export only the current pivot result.
-
-## Development checks
-
-Before pushing changes, run:
-
-```r
-devtools::document()
-devtools::load_all(reset = TRUE)
-devtools::test()
-devtools::check()
-```
-
-To rebuild this README after editing `README.Rmd`, run:
-
-```r
-devtools::build_readme()
-```
 
 ## Related work and acknowledgements
 
