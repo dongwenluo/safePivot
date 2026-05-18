@@ -7,76 +7,252 @@
   if (is.null(x)) y else x
 }
 
+
+# ------------------------------------------------------------
+# Extract factor levels
+# ------------------------------------------------------------
 safe_pivot_factor_levels <- function(data) {
+  
   stopifnot(is.data.frame(data))
-
+  
   levs <- lapply(data, function(x) {
-    if (is.factor(x)) levels(x) else NULL
+    
+    if (!is.factor(x)) {
+      return(NULL)
+    }
+    
+    levels(x)
   })
-
+  
   levs[!vapply(levs, is.null, logical(1))]
 }
 
+
+# ------------------------------------------------------------
+# Normalize factor columns safely
+# ------------------------------------------------------------
+safe_pivot_normalize_factor <- function(
+    x,
+    missing_label = "(Missing)",
+    drop_unused_levels = FALSE
+) {
+  
+  stopifnot(is.factor(x))
+  
+  # ----------------------------------------------------------
+  # Optionally remove unused levels
+  # ----------------------------------------------------------
+  if (isTRUE(drop_unused_levels)) {
+    x <- droplevels(x)
+  }
+  
+  # ----------------------------------------------------------
+  # Preserve original factor ordering
+  # ----------------------------------------------------------
+  old_levels <- levels(x)
+  
+  # Remove pathological blank-string levels
+  old_levels <- old_levels[
+    nzchar(trimws(old_levels))
+  ]
+  
+  # ----------------------------------------------------------
+  # Temporary character conversion for safe cleaning
+  # ----------------------------------------------------------
+  x_chr <- as.character(x)
+  
+  # Blank strings -> NA
+  x_chr[!nzchar(trimws(x_chr))] <- NA_character_
+  
+  # Detect REAL missing observations
+  has_missing <- any(is.na(x_chr))
+  
+  # Replace actual missing values
+  x_chr[is.na(x_chr)] <- missing_label
+  
+  # ----------------------------------------------------------
+  # Preserve original ordering
+  # Missing level always LAST
+  # ----------------------------------------------------------
+  new_levels <- old_levels
+  
+  if (has_missing) {
+    new_levels <- c(new_levels, missing_label)
+  }
+  
+  new_levels <- unique(new_levels)
+  
+  # ----------------------------------------------------------
+  # Rebuild factor preserving ordered status
+  # ----------------------------------------------------------
+  # factor(
+  #   x_chr,
+  #   levels = new_levels,
+  #   ordered = is.ordered(x)
+  # )
+  # ----------------------------------------------------------
+  # observed NON-missing values
+  observed_values <- unique(
+    stats::na.omit(
+      x_chr[x_chr != missing_label]
+    )
+  )
+  
+  # one observed level -> character
+  # avoids white-board issue in PivotTable.js/htmlwidget
+  if (length(observed_values) <= 1) {
+    return(x_chr)
+  }
+  
+  # otherwise preserve factor
+  factor(
+    x_chr,
+    levels = new_levels,
+    ordered = is.ordered(x)
+  )
+}
+
+
+# ------------------------------------------------------------
+# Normalize character/date-like columns
+# ------------------------------------------------------------
+safe_pivot_normalize_character <- function(
+    x,
+    missing_label = "(Missing)"
+) {
+  
+  x_chr <- as.character(x)
+  
+  x_chr[
+    is.na(x_chr) |
+      !nzchar(trimws(x_chr))
+  ] <- missing_label
+  
+  x_chr
+}
+
+
+# ------------------------------------------------------------
+# Prepare data for safePivot
+# ------------------------------------------------------------
 safe_pivot_prepare_data <- function(
     data,
     missing_label = "(Missing)",
     show_missing_category = TRUE,
-    group_vars = NULL
+    group_vars = NULL,
+    drop_unused_levels = FALSE
 ) {
+  
   stopifnot(is.data.frame(data))
-
+  
   if (!isTRUE(show_missing_category)) {
     return(data)
   }
-
+  
   missing_label <- as.character(missing_label)[[1]]
-
-  # Backward-compatible behaviour:
-  # - When group_vars is NULL, prepare all factor/character/date grouping-like
-  #   columns for the htmlwidget display.
-  # - When group_vars is supplied by safe_pivot_compute(), prepare only row/col
-  #   grouping variables. This avoids converting measured value NA into the
-  #   missing-label string before aggregation.
+  
+  # ----------------------------------------------------------
+  # Determine target grouping variables
+  # ----------------------------------------------------------
   if (is.null(group_vars)) {
+    
     target_vars <- names(data)[vapply(
       data,
       function(x) {
-        is.factor(x) || is.character(x) || inherits(x, c("Date", "POSIXct", "POSIXlt", "POSIXt"))
+        
+        is.factor(x) ||
+          is.character(x) ||
+          inherits(
+            x,
+            c(
+              "Date",
+              "POSIXct",
+              "POSIXlt",
+              "POSIXt"
+            )
+          )
       },
       logical(1)
     )]
+    
   } else {
-    group_vars <- trimws(as.character(unlist(group_vars, use.names = FALSE)))
-    group_vars <- group_vars[!is.na(group_vars) & nzchar(group_vars)]
-    target_vars <- intersect(group_vars, names(data))
+    
+    group_vars <- trimws(
+      as.character(
+        unlist(group_vars, use.names = FALSE)
+      )
+    )
+    
+    group_vars <- group_vars[
+      !is.na(group_vars) &
+        nzchar(group_vars)
+    ]
+    
+    target_vars <- intersect(
+      group_vars,
+      names(data)
+    )
   }
-
+  
   if (length(target_vars) == 0) {
     return(data)
   }
-
+  
+  # ----------------------------------------------------------
+  # Process grouping variables
+  # ----------------------------------------------------------
   for (nm in target_vars) {
+    
     x <- data[[nm]]
-
+    
+    # --------------------------------------------------------
+    # Factor variables
+    # --------------------------------------------------------
     if (is.factor(x)) {
-      if (!missing_label %in% levels(x)) {
-        levels(x) <- c(levels(x), missing_label)
-      }
-      x[is.na(x) | !nzchar(trimws(as.character(x)))] <- missing_label
-      data[[nm]] <- x
+      
+      data[[nm]] <- safe_pivot_normalize_factor(
+        x,
+        missing_label = missing_label,
+        drop_unused_levels = drop_unused_levels
+      )
+      
       next
     }
-
-    if (is.character(x) || inherits(x, c("Date", "POSIXct", "POSIXlt", "POSIXt"))) {
-      x_chr <- as.character(x)
-      x_chr[is.na(x_chr) | !nzchar(trimws(x_chr))] <- missing_label
-      data[[nm]] <- x_chr
+    
+    # --------------------------------------------------------
+    # Character / Date / Date-time
+    # --------------------------------------------------------
+    if (
+      is.character(x) ||
+      inherits(
+        x,
+        c(
+          "Date",
+          "POSIXct",
+          "POSIXlt",
+          "POSIXt"
+        )
+      )
+    ) {
+      
+      data[[nm]] <- safe_pivot_normalize_character(
+        x,
+        missing_label = missing_label
+      )
+      
       next
     }
-
-    # Numeric/logical/list/object columns are intentionally left unchanged.
-    # In particular, numeric NA must remain NA so missing-value aggregators work.
+    
+    # --------------------------------------------------------
+    # Numeric/logical/list/object columns:
+    # intentionally left unchanged.
+    #
+    # numeric NA must remain NA so
+    # missing-value aggregators work properly.
+    # --------------------------------------------------------
   }
-
+  
   data
 }
+
+

@@ -840,3 +840,13 @@ test_that("export helpers validate export options", {
     "which|wide|long"
   )
 })
+
+
+test_that("safe_pivot_prepare_data converts one-observed-level factor to character", {
+  iris_one <- droplevels(iris[iris$Species == "setosa", ])
+  
+  out <- safe_pivot_prepare_data(iris_one)
+  
+  expect_type(out$Species, "character")
+  expect_equal(unique(out$Species), "setosa")
+})

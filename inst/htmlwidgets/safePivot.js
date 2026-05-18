@@ -1651,6 +1651,8 @@ HTMLWidgets.widget({
                     renderers: renderers,
                     sorters: sorters,
                     rendererOptions: makeRendererOptions(x),
+                    
+                    unusedAttrsVertical: "auto",
 
                     onRefresh: function (config) {
                         var currentRendererName =

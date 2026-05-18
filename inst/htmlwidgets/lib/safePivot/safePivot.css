@@ -21,7 +21,8 @@
   --safePivot-table-font-size: 16px;
   --safePivot-badge-font-size: 11px;
 
-  --safePivot-navy: #000080;
+  --safePivot-navy: rgba(37, 99, 235, 0.16);
+  --safePivot-zone-border: rgba(37, 99, 235, 0.75);
   --safePivot-border: #d1d5db;
   --safePivot-header-bg: #e8f0f0;
   --safePivot-unused-bg: #f8fafc;
@@ -53,7 +54,7 @@
 .safePivot-wrapper table.pvtUi td.pvtAxisContainer.pvtCols,
 .safePivot-wrapper table.pvtUi td.pvtVals {
   background-color: var(--safePivot-navy) !important;
-  border: 1px solid var(--safePivot-navy) !important;
+  border: 2px solid var(--safePivot-zone-border) !important;
   padding: 10px !important;
   vertical-align: top;
 }
@@ -473,4 +474,44 @@
   width: 100% !important;
 }
 
+/* ============================================================
+   13. Unused-variable layout
+   PivotTable.js auto-selects:
+   - pvtHorizList = top unused area
+   - pvtVertList  = left unused area
+   ============================================================ */
 
+/* TOP unused area: horizontal, but allow multiple rows */
+.safePivot-wrapper table.pvtUi td.pvtUnused.pvtHorizList {
+  white-space: normal !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+}
+
+.safePivot-wrapper table.pvtUi td.pvtUnused.pvtHorizList > li {
+  display: inline-flex !important;
+  vertical-align: top !important;
+  max-width: 100% !important;
+  white-space: nowrap !important;
+}
+
+/* LEFT unused area: force ONE COLUMN only */
+.safePivot-wrapper table.pvtUi td.pvtUnused.pvtVertList {
+  white-space: normal !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.safePivot-wrapper table.pvtUi td.pvtUnused.pvtVertList > li {
+  display: flex !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  margin: 4px 0 !important;
+  clear: both !important;
+}
+
+/* Keep pills readable in both top and left unused areas */
+.safePivot-wrapper table.pvtUi td.pvtUnused.pvtHorizList > li .pvtAttr,
+.safePivot-wrapper table.pvtUi td.pvtUnused.pvtVertList > li .pvtAttr {
+  max-width: 100% !important;
+}

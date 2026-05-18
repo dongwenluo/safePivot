@@ -9,7 +9,7 @@ safePivot(
   rows = NULL,
   cols = NULL,
   vals = NULL,
-  aggregator = "Median",
+  aggregator = "Count",
   renderer = "Table",
   missing_label = "(Missing)",
   show_missing_category = TRUE,
@@ -17,7 +17,7 @@ safePivot(
   numeric_digits = 3,
   show_row_totals = TRUE,
   show_col_totals = TRUE,
-  heatmap_palette = "blue",
+  heatmap_palette = "green",
   show_type_badges = TRUE,
   conditional_format = TRUE,
   conditional_format_mode = "both",
@@ -37,7 +37,7 @@ safePivot(
   legend_font_size = 14,
   plotly_layout = NULL,
   plotly_config = NULL,
-  max_rows = 50000,
+  max_rows = 1e+05,
   width = "100\%",
   height = NULL
 )
@@ -51,7 +51,22 @@ safePivot(
 
 \item{vals}{Character vector of initial value variable. In v0.1, use one value variable.}
 
-\item{aggregator}{Initial aggregator name.}
+\item{aggregator}{Initial aggregator name. One of \code{"Count"},
+\code{"Count unique"}, \code{"List unique values"}, \code{"N non-missing"},
+\code{"N missing"}, \code{"Non-missing \%"}, \code{"Missing \%"},
+\code{"Non-missing \% within Cell"}, \code{"Missing \% within Cell"},
+\code{"Non-missing \% of Row"}, \code{"Non-missing \% of Column"},
+\code{"Non-missing \% of Total"}, \code{"Missing \% of Row"},
+\code{"Missing \% of Column"}, \code{"Missing \% of Total"}, \code{"N zero"},
+\code{"N non-zero"}, \code{"Zero \% within Cell"}, \code{"Non-zero \% within Cell"},
+\code{"Zero \% of Row"}, \code{"Zero \% of Column"}, \code{"Zero \% of Total"},
+\code{"Non-zero \% of Row"}, \code{"Non-zero \% of Column"},
+\code{"Non-zero \% of Total"}, \code{"Mean"}, \code{"Median"}, \code{"Sum"},
+\code{"Sum as Fraction of Total"}, \code{"Sum as Fraction of Rows"},
+\code{"Sum as Fraction of Columns"}, \code{"Count as Fraction of Total"},
+\code{"Count as Fraction of Rows"}, \code{"Count as Fraction of Columns"},
+\code{"Min"}, \code{"Max"}, \code{"Range"}, \code{"Variance"}, \code{"SD"}, \code{"SE"},
+\code{"CV \%"}, \code{"Q1"}, \code{"Q3"}, or \code{"IQR"}.}
 
 \item{renderer}{Initial renderer. One of \code{"Table"}, \code{"Heatmap"},
 \code{"Row Heatmap"}, \code{"Col Heatmap"}, \code{"Bar Chart"},
