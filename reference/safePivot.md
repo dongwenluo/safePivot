@@ -12,7 +12,7 @@ safePivot(
   rows = NULL,
   cols = NULL,
   vals = NULL,
-  aggregator = "Median",
+  aggregator = "Count",
   renderer = "Table",
   missing_label = "(Missing)",
   show_missing_category = TRUE,
@@ -20,7 +20,7 @@ safePivot(
   numeric_digits = 3,
   show_row_totals = TRUE,
   show_col_totals = TRUE,
-  heatmap_palette = "blue",
+  heatmap_palette = "green",
   show_type_badges = TRUE,
   conditional_format = TRUE,
   conditional_format_mode = "both",
@@ -40,7 +40,7 @@ safePivot(
   legend_font_size = 14,
   plotly_layout = NULL,
   plotly_config = NULL,
-  max_rows = 50000,
+  max_rows = 1e+05,
   width = "100%",
   height = NULL
 )
@@ -67,7 +67,21 @@ safePivot(
 
 - aggregator:
 
-  Initial aggregator name.
+  Initial aggregator name. One of `"Count"`, `"Count unique"`,
+  `"List unique values"`, `"N non-missing"`, `"N missing"`,
+  `"Non-missing %"`, `"Missing %"`, `"Non-missing % within Cell"`,
+  `"Missing % within Cell"`, `"Non-missing % of Row"`,
+  `"Non-missing % of Column"`, `"Non-missing % of Total"`,
+  `"Missing % of Row"`, `"Missing % of Column"`, `"Missing % of Total"`,
+  `"N zero"`, `"N non-zero"`, `"Zero % within Cell"`,
+  `"Non-zero % within Cell"`, `"Zero % of Row"`, `"Zero % of Column"`,
+  `"Zero % of Total"`, `"Non-zero % of Row"`, `"Non-zero % of Column"`,
+  `"Non-zero % of Total"`, `"Mean"`, `"Median"`, `"Sum"`,
+  `"Sum as Fraction of Total"`, `"Sum as Fraction of Rows"`,
+  `"Sum as Fraction of Columns"`, `"Count as Fraction of Total"`,
+  `"Count as Fraction of Rows"`, `"Count as Fraction of Columns"`,
+  `"Min"`, `"Max"`, `"Range"`, `"Variance"`, `"SD"`, `"SE"`, `"CV %"`,
+  `"Q1"`, `"Q3"`, or `"IQR"`.
 
 - renderer:
 
