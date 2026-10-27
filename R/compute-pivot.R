@@ -4,6 +4,9 @@
 # Note: safe_pivot_prepare_data() lives in prepare-data.R
 # ============================================================
 
+#' @importFrom dplyr .data
+NULL
+
 safe_pivot_chr <- function(x) {
   if (is.null(x)) {
     return(character())
@@ -120,232 +123,8 @@ safe_pivot_check_columns <- function(data, vars, arg = "vars") {
 }
 
 
-safe_pivot_normalize_aggregator <- function(aggregator) {
-  aggregator <- as.character(aggregator)[[1]]
-
-  switch(
-    aggregator,
-    "Missing %" = "Missing % within Cell",
-    "Non-missing %" = "Non-missing % within Cell",
-    aggregator
-  )
-}
-
-safe_pivot_allowed_aggregators <- function() {
-  c(
-    "Count",
-    "Count unique",
-    "List unique values",
-
-    "N non-missing",
-    "N missing",
-    "Non-missing %",
-    "Missing %",
-    "Non-missing % within Cell",
-    "Missing % within Cell",
-    "Non-missing % of Row",
-    "Non-missing % of Column",
-    "Non-missing % of Total",
-    "Missing % of Row",
-    "Missing % of Column",
-    "Missing % of Total",
-
-    "N zero",
-    "N non-zero",
-    "Zero % within Cell",
-    "Non-zero % within Cell",
-    "Zero % of Row",
-    "Zero % of Column",
-    "Zero % of Total",
-    "Non-zero % of Row",
-    "Non-zero % of Column",
-    "Non-zero % of Total",
-
-    "Mean",
-    "Median",
-    "Sum",
-    "Sum as Fraction of Total",
-    "Sum as Fraction of Rows",
-    "Sum as Fraction of Columns",
-    "Count as Fraction of Total",
-    "Count as Fraction of Rows",
-    "Count as Fraction of Columns",
-    "Min",
-    "Max",
-    "Range",
-    "Variance",
-    "SD",
-    "SE",
-    "CV %",
-    "Q1",
-    "Q3",
-    "IQR"
-  )
-}
-
-safe_pivot_is_fraction_aggregator <- function(aggregator) {
-  aggregator <- safe_pivot_normalize_aggregator(aggregator)
-
-  aggregator %in% c(
-    "Sum as Fraction of Total",
-    "Sum as Fraction of Rows",
-    "Sum as Fraction of Columns",
-    "Count as Fraction of Total",
-    "Count as Fraction of Rows",
-    "Count as Fraction of Columns"
-  )
-}
-
-safe_pivot_fraction_base <- function(aggregator) {
-  aggregator <- safe_pivot_normalize_aggregator(aggregator)
-
-  if (aggregator %in% c(
-    "Sum as Fraction of Total",
-    "Sum as Fraction of Rows",
-    "Sum as Fraction of Columns"
-  )) {
-    return("Sum")
-  }
-
-  if (aggregator %in% c(
-    "Count as Fraction of Total",
-    "Count as Fraction of Rows",
-    "Count as Fraction of Columns"
-  )) {
-    return("Count")
-  }
-
-  aggregator
-}
-
-safe_pivot_is_context_percent_aggregator <- function(aggregator) {
-  aggregator <- safe_pivot_normalize_aggregator(aggregator)
-
-  aggregator %in% c(
-    "Missing % of Row",
-    "Missing % of Column",
-    "Missing % of Total",
-    "Non-missing % of Row",
-    "Non-missing % of Column",
-    "Non-missing % of Total",
-    "Zero % of Row",
-    "Zero % of Column",
-    "Zero % of Total",
-    "Non-zero % of Row",
-    "Non-zero % of Column",
-    "Non-zero % of Total"
-  )
-}
-
-safe_pivot_requires_value <- function(aggregator) {
-  aggregator <- safe_pivot_normalize_aggregator(aggregator)
-  base_aggregator <- safe_pivot_fraction_base(aggregator)
-
-  !identical(base_aggregator, "Count")
-}
-
-safe_agg_vector <- function(x, aggregator) {
-  aggregator <- safe_pivot_normalize_aggregator(aggregator)
-
-  if (aggregator == "Count") {
-    return(length(x))
-  }
-
-  if (aggregator == "Count unique") {
-    x2 <- x[!safe_pivot_is_missing_value(x)]
-    return(length(unique(x2)))
-  }
-
-  if (aggregator == "List unique values") {
-    x2 <- as.character(x)
-    x2 <- x2[!safe_pivot_is_missing_value(x2)]
-    return(paste(sort(unique(x2)), collapse = ", "))
-  }
-
-  if (aggregator == "N non-missing") {
-    return(safe_pivot_count_non_missing(x))
-  }
-
-  if (aggregator == "N missing") {
-    return(safe_pivot_count_missing(x))
-  }
-
-  if (aggregator == "Non-missing % within Cell") {
-    return(
-      safe_pivot_pct(
-        safe_pivot_count_non_missing(x),
-        safe_pivot_count_all(x)
-      )
-    )
-  }
-
-  if (aggregator == "Missing % within Cell") {
-    return(
-      safe_pivot_pct(
-        safe_pivot_count_missing(x),
-        safe_pivot_count_all(x)
-      )
-    )
-  }
-
-  if (aggregator == "N zero") {
-    return(safe_pivot_count_zero(x))
-  }
-
-  if (aggregator == "N non-zero") {
-    return(safe_pivot_count_non_zero(x))
-  }
-
-  if (aggregator == "Zero % within Cell") {
-    return(
-      safe_pivot_pct(
-        safe_pivot_count_zero(x),
-        safe_pivot_count_numeric(x)
-      )
-    )
-  }
-
-  if (aggregator == "Non-zero % within Cell") {
-    return(
-      safe_pivot_pct(
-        safe_pivot_count_non_zero(x),
-        safe_pivot_count_numeric(x)
-      )
-    )
-  }
-
-  v <- safe_numeric(x)
-
-  if (length(v) == 0) {
-    return(NA_real_)
-  }
-
-  switch(
-    aggregator,
-    "Sum" = sum(v),
-    "Mean" = mean(v),
-    "Median" = stats::median(v),
-    "Min" = min(v),
-    "Max" = max(v),
-    "Range" = max(v) - min(v),
-    "Variance" = if (length(v) >= 2) stats::var(v) else NA_real_,
-    "SD" = if (length(v) >= 2) stats::sd(v) else NA_real_,
-    "SE" = if (length(v) >= 2) stats::sd(v) / sqrt(length(v)) else NA_real_,
-    "CV %" = {
-      if (length(v) < 2) {
-        NA_real_
-      } else {
-        m <- mean(v)
-        if (isTRUE(all.equal(m, 0))) NA_real_ else 100 * stats::sd(v) / m
-      }
-    },
-    "Q1" = as.numeric(stats::quantile(v, probs = 0.25, names = FALSE, type = 7)),
-    "Q3" = as.numeric(stats::quantile(v, probs = 0.75, names = FALSE, type = 7)),
-    "IQR" = stats::IQR(v),
-    stop("Unsupported aggregator: ", aggregator, call. = FALSE)
-  )
-}
-
+# Run `fun` on `value_var` within each group. Returns the group columns
+# plus `.value`, sorted by the group columns.
 safe_pivot_group_apply <- function(data, group_vars, value_var, fun) {
   group_vars <- safe_pivot_chr(group_vars)
 
@@ -353,80 +132,66 @@ safe_pivot_group_apply <- function(data, group_vars, value_var, fun) {
     return(data.frame(.value = fun(data[[value_var]])))
   }
 
-  if (nrow(data) == 0) {
-    out <- data[group_vars][0, , drop = FALSE]
+  values <- data[[value_var]]
+  idx_col <- safe_pivot_new_col_name(data[group_vars], ".safePivot_idx")
+
+  keys <- data[group_vars]
+  keys[[idx_col]] <- seq_len(nrow(data))
+
+  out <- keys |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(group_vars))) |>
+    dplyr::summarise(
+      .value = fun(values[.data[[idx_col]]]),
+      .groups = "drop"
+    )
+
+  if (nrow(out) == 0) {
     out$.value <- logical()
-    return(out)
   }
 
-  split_keys <- data[group_vars]
-  split_idx <- split(seq_len(nrow(data)), split_keys, drop = TRUE)
-
-  out <- lapply(split_idx, function(idx) {
-    group_row <- data[idx[[1]], group_vars, drop = FALSE]
-    group_row$.value <- fun(data[[value_var]][idx])
-    group_row
-  })
-
-  out <- do.call(rbind, out)
-  rownames(out) <- NULL
-  out
+  as.data.frame(out, stringsAsFactors = FALSE)
 }
 
+# Record, missing, numeric and zero counts (and numeric sum) of `value_var`
+# per group. Columns are named `<prefix>_all_n`, `<prefix>_missing_n`, ...
 safe_pivot_group_counts <- function(data, group_vars, value_var, prefix) {
   group_vars <- safe_pivot_chr(group_vars)
 
-  make_one <- function(dat) {
-    x <- dat[[value_var]]
+  x <- data[[value_var]]
+  x_num <- safe_pivot_to_numeric(x)
 
-    x_num <- safe_pivot_to_numeric(x)
-    is_num <- is.finite(x_num)
+  # Work on a small frame of keys plus pre-computed flags, so the
+  # per-group step is only sums.
+  flags <- data[group_vars]
+  tmp <- safe_pivot_new_col_name(flags, ".safePivot_tmp")
+  is_missing <- paste0(tmp, "_missing")
+  is_num <- paste0(tmp, "_is_num")
+  num <- paste0(tmp, "_num")
 
-    n_all <- length(x)
+  flags[[is_missing]] <- safe_pivot_is_missing_value(x)
+  flags[[is_num]] <- is.finite(x_num)
+  flags[[num]] <- ifelse(is.finite(x_num), x_num, 0)
 
-    data.frame(
-      all_n = n_all,
-      missing_n = safe_pivot_count_missing(x),
-      non_missing_n = safe_pivot_count_non_missing(x),
-      numeric_n = sum(is_num),
-      zero_n = sum(is_num & x_num == 0),
-      non_zero_n = sum(is_num & x_num != 0),
-      sum_numeric = if (sum(is_num) == 0) NA_real_ else sum(x_num[is_num])
-    )
+  if (length(group_vars) > 0) {
+    flags <- dplyr::group_by(flags, dplyr::across(dplyr::all_of(group_vars)))
   }
 
-  if (length(group_vars) == 0) {
-    out <- make_one(data)
-  } else if (nrow(data) == 0) {
-    out <- data[group_vars][0, , drop = FALSE]
-    out$all_n <- integer()
-    out$missing_n <- integer()
-    out$non_missing_n <- integer()
-    out$numeric_n <- integer()
-    out$zero_n <- integer()
-    out$non_zero_n <- integer()
-    out$sum_numeric <- numeric()
-  } else {
-    split_keys <- data[group_vars]
-    split_idx <- split(seq_len(nrow(data)), split_keys, drop = TRUE)
+  out <- flags |>
+    dplyr::summarise(
+      all_n = dplyr::n(),
+      missing_n = sum(.data[[is_missing]]),
+      non_missing_n = dplyr::n() - sum(.data[[is_missing]]),
+      numeric_n = sum(.data[[is_num]]),
+      zero_n = sum(.data[[is_num]] & .data[[num]] == 0),
+      non_zero_n = sum(.data[[is_num]] & .data[[num]] != 0),
+      sum_numeric = if (any(.data[[is_num]])) sum(.data[[num]]) else NA_real_,
+      .groups = "drop"
+    ) |>
+    as.data.frame(stringsAsFactors = FALSE)
 
-    out <- lapply(split_idx, function(idx) {
-      group_row <- data[idx[[1]], group_vars, drop = FALSE]
-      summary_row <- make_one(data[idx, , drop = FALSE])
-      cbind(group_row, summary_row)
-    })
-
-    out <- do.call(rbind, out)
-    rownames(out) <- NULL
-  }
-
-  names(out)[names(out) == "all_n"] <- paste0(prefix, "_all_n")
-  names(out)[names(out) == "missing_n"] <- paste0(prefix, "_missing_n")
-  names(out)[names(out) == "non_missing_n"] <- paste0(prefix, "_non_missing_n")
-  names(out)[names(out) == "numeric_n"] <- paste0(prefix, "_numeric_n")
-  names(out)[names(out) == "zero_n"] <- paste0(prefix, "_zero_n")
-  names(out)[names(out) == "non_zero_n"] <- paste0(prefix, "_non_zero_n")
-  names(out)[names(out) == "sum_numeric"] <- paste0(prefix, "_sum_numeric")
+  stats <- c("all_n", "missing_n", "non_missing_n", "numeric_n",
+             "zero_n", "non_zero_n", "sum_numeric")
+  names(out)[match(stats, names(out))] <- paste0(prefix, "_", stats)
 
   out
 }
@@ -460,24 +225,14 @@ safe_pivot_compute_fraction <- function(data, rows, cols, vals, aggregator) {
   cols <- safe_pivot_chr(cols)
   vals <- safe_pivot_chr(vals)
 
-  sum_fraction_aggs <- c(
-    "Sum as Fraction of Total",
-    "Sum as Fraction of Rows",
-    "Sum as Fraction of Columns"
-  )
+  spec <- safe_pivot_aggregator_spec(aggregator)
 
-  count_fraction_aggs <- c(
-    "Count as Fraction of Total",
-    "Count as Fraction of Rows",
-    "Count as Fraction of Columns"
-  )
-
-  is_sum_fraction <- aggregator %in% sum_fraction_aggs
-  is_count_fraction <- aggregator %in% count_fraction_aggs
-
-  if (!is_sum_fraction && !is_count_fraction) {
+  if (is.null(spec) || spec$family != "fraction") {
     stop("Unsupported fraction aggregator: ", aggregator, call. = FALSE)
   }
+
+  is_sum_fraction <- spec$measure == "sum"
+  is_count_fraction <- spec$measure == "count"
 
   if (is_sum_fraction &&
       (length(vals) != 1 || is.na(vals[[1]]) || !nzchar(vals[[1]]))) {
@@ -523,11 +278,11 @@ safe_pivot_compute_fraction <- function(data, rows, cols, vals, aggregator) {
 
   cell_summary$.value <- NA_real_
 
-  if (aggregator %in% c("Sum as Fraction of Total", "Count as Fraction of Total")) {
+  if (spec$scope == "total") {
     cell_summary$.value <- safe_pivot_pct(cell_num, total_denom)
   }
 
-  if (aggregator %in% c("Sum as Fraction of Rows", "Count as Fraction of Rows")) {
+  if (spec$scope == "row") {
     if (length(rows) == 0) {
       cell_summary$.value <- safe_pivot_pct(cell_num, total_denom)
     } else {
@@ -550,7 +305,7 @@ safe_pivot_compute_fraction <- function(data, rows, cols, vals, aggregator) {
     }
   }
 
-  if (aggregator %in% c("Sum as Fraction of Columns", "Count as Fraction of Columns")) {
+  if (spec$scope == "col") {
     if (length(cols) == 0) {
       cell_summary$.value <- safe_pivot_pct(cell_num, total_denom)
     } else {
@@ -658,70 +413,13 @@ safe_pivot_compute_context_percent <- function(data, rows, cols, vals, aggregato
     cell_summary[[nm]] <- total_summary[[nm]][[1]]
   }
 
-  cell_summary$.value <- switch(
-    aggregator,
+  spec <- safe_pivot_aggregator_spec(aggregator)
+  scope_prefix <- c(row = "row", col = "col", total = "total")[[spec$scope]]
+  denom_stat <- if (spec$measure %in% c("missing", "non_missing")) "all_n" else "numeric_n"
 
-    "Missing % of Row" = safe_pivot_pct(
-      cell_summary$.safePivot_cell_missing_n,
-      cell_summary$.safePivot_row_all_n
-    ),
-
-    "Missing % of Column" = safe_pivot_pct(
-      cell_summary$.safePivot_cell_missing_n,
-      cell_summary$.safePivot_col_all_n
-    ),
-
-    "Missing % of Total" = safe_pivot_pct(
-      cell_summary$.safePivot_cell_missing_n,
-      cell_summary$.safePivot_total_all_n
-    ),
-
-    "Non-missing % of Row" = safe_pivot_pct(
-      cell_summary$.safePivot_cell_non_missing_n,
-      cell_summary$.safePivot_row_all_n
-    ),
-
-    "Non-missing % of Column" = safe_pivot_pct(
-      cell_summary$.safePivot_cell_non_missing_n,
-      cell_summary$.safePivot_col_all_n
-    ),
-
-    "Non-missing % of Total" = safe_pivot_pct(
-      cell_summary$.safePivot_cell_non_missing_n,
-      cell_summary$.safePivot_total_all_n
-    ),
-
-    "Zero % of Row" = safe_pivot_pct(
-      cell_summary$.safePivot_cell_zero_n,
-      cell_summary$.safePivot_row_numeric_n
-    ),
-
-    "Zero % of Column" = safe_pivot_pct(
-      cell_summary$.safePivot_cell_zero_n,
-      cell_summary$.safePivot_col_numeric_n
-    ),
-
-    "Zero % of Total" = safe_pivot_pct(
-      cell_summary$.safePivot_cell_zero_n,
-      cell_summary$.safePivot_total_numeric_n
-    ),
-
-    "Non-zero % of Row" = safe_pivot_pct(
-      cell_summary$.safePivot_cell_non_zero_n,
-      cell_summary$.safePivot_row_numeric_n
-    ),
-
-    "Non-zero % of Column" = safe_pivot_pct(
-      cell_summary$.safePivot_cell_non_zero_n,
-      cell_summary$.safePivot_col_numeric_n
-    ),
-
-    "Non-zero % of Total" = safe_pivot_pct(
-      cell_summary$.safePivot_cell_non_zero_n,
-      cell_summary$.safePivot_total_numeric_n
-    ),
-
-    stop("Unsupported context percentage aggregator: ", aggregator, call. = FALSE)
+  cell_summary$.value <- safe_pivot_pct(
+    cell_summary[[paste0(".safePivot_cell_", spec$measure, "_n")]],
+    cell_summary[[paste0(".safePivot_", scope_prefix, "_", denom_stat)]]
   )
 
   long <- cell_summary |>

@@ -99,135 +99,21 @@ HTMLWidgets.widget({
         2. Aggregators
         ============================================================ */
 
-        function normalizeAggregatorName(type) {
-            if (type === "Missing %")
-                return "Missing % within Cell";
-            if (type === "Non-missing %")
-                return "Non-missing % within Cell";
-            return type;
-        }
+        /*
+         * The aggregator list comes from R (safe_pivot_aggregator_registry()):
+         * each entry has name, family, measure, scope, needs_value, format.
+         * See R/aggregators.R for what each field means.
+         */
 
-        function defaultAggregatorNames() {
-            return [
-                "Count",
-                "Count unique",
-                "List unique values",
-                "N missing",
-                "N non-missing",
-                "Missing % within Cell",
-                "Non-missing % within Cell",
-                "Missing % of Row",
-                "Missing % of Column",
-                "Missing % of Total",
-                "Non-missing % of Row",
-                "Non-missing % of Column",
-                "Non-missing % of Total",
-                "N zero",
-                "N non-zero",
-                "Zero % within Cell",
-                "Non-zero % within Cell",
-                "Zero % of Row",
-                "Zero % of Column",
-                "Zero % of Total",
-                "Non-zero % of Row",
-                "Non-zero % of Column",
-                "Non-zero % of Total",
-                "Sum",
-                "Mean",
-                "Median",
-                "Min",
-                "Max",
-                "Range",
-                "Q1",
-                "Q3",
-                "IQR",
-                "Variance",
-                "SD",
-                "SE",
-                "CV %",
-                "Sum as Fraction of Total",
-                "Sum as Fraction of Rows",
-                "Sum as Fraction of Columns",
-                "Count as Fraction of Total",
-                "Count as Fraction of Rows",
-                "Count as Fraction of Columns"
-            ];
-        }
+        function percent100(num, den) {
+            num = Number(num);
+            den = Number(den);
 
-        function needsValue(type) {
-            type = normalizeAggregatorName(type);
+            if (!Number.isFinite(num) || !Number.isFinite(den) || den === 0) {
+                return null;
+            }
 
-            return ![
-                "Count",
-                "Count as Fraction of Total",
-                "Count as Fraction of Rows",
-                "Count as Fraction of Columns"
-            ].includes(type);
-        }
-
-        function isFractionAggregator(type) {
-            type = normalizeAggregatorName(type);
-
-            return [
-                "Sum as Fraction of Total",
-                "Sum as Fraction of Rows",
-                "Sum as Fraction of Columns",
-                "Count as Fraction of Total",
-                "Count as Fraction of Rows",
-                "Count as Fraction of Columns"
-            ].includes(type);
-        }
-
-        function isContextPercentAggregator(type) {
-            type = normalizeAggregatorName(type);
-
-            return [
-                "Missing % of Row",
-                "Missing % of Column",
-                "Missing % of Total",
-                "Non-missing % of Row",
-                "Non-missing % of Column",
-                "Non-missing % of Total",
-                "Zero % of Row",
-                "Zero % of Column",
-                "Zero % of Total",
-                "Non-zero % of Row",
-                "Non-zero % of Column",
-                "Non-zero % of Total"
-            ].includes(type);
-        }
-
-        function isWithinCellPercentAggregator(type) {
-            type = normalizeAggregatorName(type);
-
-            return [
-                "Missing % within Cell",
-                "Non-missing % within Cell",
-                "Zero % within Cell",
-                "Non-zero % within Cell"
-            ].includes(type);
-        }
-
-        function isIntegerLikeAggregator(type) {
-            type = normalizeAggregatorName(type);
-
-            return [
-                "Count",
-                "Count unique",
-                "N non-missing",
-                "N missing",
-                "N zero",
-                "N non-zero"
-            ].includes(type);
-        }
-
-        function isPercent100Aggregator(type) {
-            type = normalizeAggregatorName(type);
-
-            return (
-                type === "CV %" ||
-                isWithinCellPercentAggregator(type) ||
-                isContextPercentAggregator(type));
+            return 100 * num / den;
         }
 
         function isMissingDataValue(value, missingLabel) {
@@ -251,49 +137,112 @@ HTMLWidgets.widget({
             return isBlankText(text);
         }
 
-        function percent100(num, den) {
-            num = Number(num);
-            den = Number(den);
+        function quantile(sorted, p) {
+            var pos = (sorted.length - 1) * p;
+            var base = Math.floor(pos);
+            var rest = pos - base;
 
-            if (!Number.isFinite(num) || !Number.isFinite(den) || den === 0) {
-                return null;
+            if (sorted[base + 1] !== undefined) {
+                return sorted[base] + rest * (sorted[base + 1] - sorted[base]);
             }
 
-            return 100 * num / den;
+            return sorted[base];
         }
 
-        function getSafeCountMethod(agg, methodName) {
-            if (!agg || typeof agg[methodName] !== "function")
+        function sumOf(v) {
+            return v.reduce(function (a, b) {
+                return a + b;
+            }, 0);
+        }
+
+        // Numeric summaries for family "stat".
+        function statValue(name, v) {
+            var n = v.length;
+
+            if (n === 0)
                 return null;
 
-            var value = agg[methodName]();
-            return Number.isFinite(Number(value)) ? Number(value) : null;
+            if (name === "Sum")
+                return sumOf(v);
+            if (name === "Mean")
+                return sumOf(v) / n;
+            if (name === "Min")
+                return Math.min.apply(null, v);
+            if (name === "Max")
+                return Math.max.apply(null, v);
+            if (name === "Range")
+                return Math.max.apply(null, v) - Math.min.apply(null, v);
+
+            if (name === "Median" || name === "Q1" || name === "Q3" || name === "IQR") {
+                var sorted = v.slice().sort(function (a, b) {
+                    return a - b;
+                });
+
+                if (name === "Median")
+                    return quantile(sorted, 0.5);
+                if (name === "Q1")
+                    return quantile(sorted, 0.25);
+                if (name === "Q3")
+                    return quantile(sorted, 0.75);
+                return quantile(sorted, 0.75) - quantile(sorted, 0.25);
+            }
+
+            if (name === "Variance" || name === "SD" || name === "SE" || name === "CV %") {
+                if (n < 2)
+                    return null;
+
+                var mean = sumOf(v) / n;
+                var variance = v.reduce(function (a, b) {
+                    return a + Math.pow(b - mean, 2);
+                }, 0) / (n - 1);
+                var sd = Math.sqrt(variance);
+
+                if (name === "Variance")
+                    return variance;
+                if (name === "SD")
+                    return sd;
+                if (name === "SE")
+                    return sd / Math.sqrt(n);
+                return mean === 0 ? null : 100 * sd / mean;
+            }
+
+            return null;
         }
 
-        function numericAggregator(type, digits, missingLabel) {
-            var displayType = type;
-            type = normalizeAggregatorName(type);
-
-            var nInputs = needsValue(type) ? 1 : 0;
+        function makeAggregator(spec, digits, missingLabel) {
+            var nInputs = spec.needs_value ? 1 : 0;
 
             var generator = function (attrs) {
                 attrs = attrs || [];
                 var attr = attrs.length ? attrs[0] : null;
 
                 var aggregator = function (data, rowKey, colKey) {
+                    // The aggregator for the row, column or grand total.
+                    function scopeAggregator(scope) {
+                        if (scope === "row")
+                            return data.getAggregator(rowKey, []);
+                        if (scope === "col")
+                            return data.getAggregator([], colKey);
+                        if (scope === "total")
+                            return data.getAggregator([], []);
+                        return null;
+                    }
+
                     return {
                         values: [],
                         rawValues: [],
-                        countAll: 0,
-                        countMissing: 0,
-                        countNonMissing: 0,
-                        countNumeric: 0,
-                        countZero: 0,
-                        countNonZero: 0,
+                        counts: {
+                            all: 0,
+                            missing: 0,
+                            non_missing: 0,
+                            numeric: 0,
+                            zero: 0,
+                            non_zero: 0
+                        },
                         numInputs: nInputs,
 
                         push: function (record) {
-                            this.countAll += 1;
+                            this.counts.all += 1;
 
                             if (!attr)
                                 return;
@@ -302,347 +251,115 @@ HTMLWidgets.widget({
                             this.rawValues.push(raw);
 
                             if (isMissingDataValue(raw, missingLabel)) {
-                                this.countMissing += 1;
+                                this.counts.missing += 1;
                                 return;
                             }
 
-                            this.countNonMissing += 1;
+                            this.counts.non_missing += 1;
 
                             var v = cleanNumber(raw);
 
                             if (v !== null) {
                                 this.values.push(v);
-                                this.countNumeric += 1;
-
-                                if (v === 0) {
-                                    this.countZero += 1;
-                                } else {
-                                    this.countNonZero += 1;
-                                }
+                                this.counts.numeric += 1;
+                                this.counts[v === 0 ? "zero" : "non_zero"] += 1;
                             }
                         },
 
-                        allN: function () {
-                            return this.countAll;
+                        // Count used by n / percent aggregators.
+                        measureN: function (measure) {
+                            return this.counts[measure];
                         },
 
-                        missingN: function () {
-                            return this.countMissing;
+                        // Denominator for a percent: all records for
+                        // (non-)missing, numeric values for (non-)zero.
+                        measureDenominator: function (measure) {
+                            return measure === "missing" || measure === "non_missing"
+                                ? this.counts.all
+                                : this.counts.numeric;
                         },
 
-                        nonMissingN: function () {
-                            return this.countNonMissing;
+                        uniqueValues: function () {
+                            var seen = {};
+
+                            this.rawValues.forEach(function (x) {
+                                if (!isMissingDataValue(x, missingLabel)) {
+                                    seen[String(x)] = true;
+                                }
+                            });
+
+                            return Object.keys(seen);
                         },
 
-                        numericN: function () {
-                            return this.countNumeric;
-                        },
-
-                        zeroN: function () {
-                            return this.countZero;
-                        },
-
-                        nonZeroN: function () {
-                            return this.countNonZero;
-                        },
-
+                        // Value for this cell alone (no row/column context).
                         baseValue: function () {
-                            var v = this.values;
-                            var n = v.length;
-
-                            if (
-                                type === "Count" ||
-                                type === "Count as Fraction of Total" ||
-                                type === "Count as Fraction of Rows" ||
-                                type === "Count as Fraction of Columns") {
-                                return this.countAll;
+                            switch (spec.family) {
+                            case "count":
+                                return this.counts.all;
+                            case "count_unique":
+                                return this.uniqueValues().length;
+                            case "list":
+                                return this.uniqueValues().sort().join(", ");
+                            case "n":
+                                return this.measureN(spec.measure);
+                            case "percent":
+                                return percent100(
+                                    this.measureN(spec.measure),
+                                    this.measureDenominator(spec.measure));
+                            case "fraction":
+                                return spec.measure === "count"
+                                    ? this.counts.all
+                                    : statValue("Sum", this.values);
+                            default:
+                                return statValue(spec.name, this.values);
                             }
-
-                            if (type === "Count unique") {
-                                var seen = {};
-
-                                this.rawValues.forEach(function (x) {
-                                    if (!isMissingDataValue(x, missingLabel)) {
-                                        seen[String(x)] = true;
-                                    }
-                                });
-
-                                return Object.keys(seen).length;
-                            }
-
-                            if (type === "List unique values") {
-                                var seenList = {};
-
-                                this.rawValues.forEach(function (x) {
-                                    if (!isMissingDataValue(x, missingLabel)) {
-                                        seenList[String(x)] = true;
-                                    }
-                                });
-
-                                return Object.keys(seenList).sort().join(", ");
-                            }
-
-                            if (type === "N non-missing")
-                                return this.countNonMissing;
-                            if (type === "N missing")
-                                return this.countMissing;
-
-                            if (type === "Non-missing % within Cell") {
-                                return percent100(this.countNonMissing, this.countAll);
-                            }
-
-                            if (type === "Missing % within Cell") {
-                                return percent100(this.countMissing, this.countAll);
-                            }
-
-                            if (type === "N zero")
-                                return this.countZero;
-                            if (type === "N non-zero")
-                                return this.countNonZero;
-
-                            if (type === "Zero % within Cell") {
-                                return percent100(this.countZero, this.countNumeric);
-                            }
-
-                            if (type === "Non-zero % within Cell") {
-                                return percent100(this.countNonZero, this.countNumeric);
-                            }
-
-                            if (n === 0)
-                                return null;
-
-                            if (
-                                type === "Sum" ||
-                                type === "Sum as Fraction of Total" ||
-                                type === "Sum as Fraction of Rows" ||
-                                type === "Sum as Fraction of Columns") {
-                                return v.reduce(function (a, b) {
-                                    return a + b;
-                                }, 0);
-                            }
-
-                            if (type === "Mean") {
-                                return v.reduce(function (a, b) {
-                                    return a + b;
-                                }, 0) / n;
-                            }
-
-                            if (
-                                type === "Median" ||
-                                type === "Q1" ||
-                                type === "Q3" ||
-                                type === "IQR") {
-                                var sorted = v.slice().sort(function (a, b) {
-                                    return a - b;
-                                });
-
-                                function quantile(arr, p) {
-                                    var pos = (arr.length - 1) * p;
-                                    var base = Math.floor(pos);
-                                    var rest = pos - base;
-
-                                    if (arr[base + 1] !== undefined) {
-                                        return arr[base] + rest * (arr[base + 1] - arr[base]);
-                                    }
-
-                                    return arr[base];
-                                }
-
-                                var q1 = quantile(sorted, 0.25);
-                                var q2 = quantile(sorted, 0.5);
-                                var q3 = quantile(sorted, 0.75);
-
-                                if (type === "Median")
-                                    return q2;
-                                if (type === "Q1")
-                                    return q1;
-                                if (type === "Q3")
-                                    return q3;
-                                if (type === "IQR")
-                                    return q3 - q1;
-                            }
-
-                            if (type === "Min")
-                                return Math.min.apply(null, v);
-                            if (type === "Max")
-                                return Math.max.apply(null, v);
-                            if (type === "Range")
-                                return Math.max.apply(null, v) - Math.min.apply(null, v);
-
-                            if (
-                                type === "Variance" ||
-                                type === "SD" ||
-                                type === "SE" ||
-                                type === "CV %") {
-                                if (n < 2)
-                                    return null;
-
-                                var mean = v.reduce(function (a, b) {
-                                    return a + b;
-                                }, 0) / n;
-
-                                var ss = v.reduce(function (a, b) {
-                                    return a + Math.pow(b - mean, 2);
-                                }, 0);
-
-                                var variance = ss / (n - 1);
-                                var sd = Math.sqrt(variance);
-
-                                if (type === "Variance")
-                                    return variance;
-                                if (type === "SD")
-                                    return sd;
-                                if (type === "SE")
-                                    return sd / Math.sqrt(n);
-                                if (type === "CV %")
-                                    return mean === 0 ? null : 100 * sd / mean;
-                            }
-
-                            return null;
-                        },
-
-                        contextNumerator: function () {
-                            if (
-                                type === "Missing % of Row" ||
-                                type === "Missing % of Column" ||
-                                type === "Missing % of Total") {
-                                return this.countMissing;
-                            }
-
-                            if (
-                                type === "Non-missing % of Row" ||
-                                type === "Non-missing % of Column" ||
-                                type === "Non-missing % of Total") {
-                                return this.countNonMissing;
-                            }
-
-                            if (
-                                type === "Zero % of Row" ||
-                                type === "Zero % of Column" ||
-                                type === "Zero % of Total") {
-                                return this.countZero;
-                            }
-
-                            if (
-                                type === "Non-zero % of Row" ||
-                                type === "Non-zero % of Column" ||
-                                type === "Non-zero % of Total") {
-                                return this.countNonZero;
-                            }
-
-                            return null;
-                        },
-
-                        contextDenominator: function () {
-                            var denomAgg = null;
-
-                            if (
-                                type === "Missing % of Row" ||
-                                type === "Non-missing % of Row" ||
-                                type === "Zero % of Row" ||
-                                type === "Non-zero % of Row") {
-                                denomAgg = data.getAggregator(rowKey, []);
-                            }
-
-                            if (
-                                type === "Missing % of Column" ||
-                                type === "Non-missing % of Column" ||
-                                type === "Zero % of Column" ||
-                                type === "Non-zero % of Column") {
-                                denomAgg = data.getAggregator([], colKey);
-                            }
-
-                            if (
-                                type === "Missing % of Total" ||
-                                type === "Non-missing % of Total" ||
-                                type === "Zero % of Total" ||
-                                type === "Non-zero % of Total") {
-                                denomAgg = data.getAggregator([], []);
-                            }
-
-                            if (!denomAgg)
-                                return null;
-
-                            if (
-                                type === "Missing % of Row" ||
-                                type === "Missing % of Column" ||
-                                type === "Missing % of Total" ||
-                                type === "Non-missing % of Row" ||
-                                type === "Non-missing % of Column" ||
-                                type === "Non-missing % of Total") {
-                                return getSafeCountMethod(denomAgg, "allN");
-                            }
-
-                            if (
-                                type === "Zero % of Row" ||
-                                type === "Zero % of Column" ||
-                                type === "Zero % of Total" ||
-                                type === "Non-zero % of Row" ||
-                                type === "Non-zero % of Column" ||
-                                type === "Non-zero % of Total") {
-                                return getSafeCountMethod(denomAgg, "numericN");
-                            }
-
-                            return null;
                         },
 
                         value: function () {
-                            if (isContextPercentAggregator(type)) {
-                                return percent100(this.contextNumerator(), this.contextDenominator());
+                            if (spec.family === "percent" && spec.scope !== "cell") {
+                                var other = scopeAggregator(spec.scope);
+
+                                if (!other || typeof other.measureDenominator !== "function")
+                                    return null;
+
+                                return percent100(
+                                    this.measureN(spec.measure),
+                                    other.measureDenominator(spec.measure));
                             }
 
-                            if (!isFractionAggregator(type)) {
-                                return this.baseValue();
+                            if (spec.family === "fraction") {
+                                var total = scopeAggregator(spec.scope);
+
+                                if (!total || typeof total.baseValue !== "function")
+                                    return null;
+
+                                var denominator = total.baseValue();
+
+                                if (
+                                    denominator === null ||
+                                    denominator === undefined ||
+                                    Number(denominator) === 0) {
+                                    return null;
+                                }
+
+                                return this.baseValue() / denominator;
                             }
 
-                            var numerator = this.baseValue();
-                            var denomAgg = null;
-
-                            if (
-                                type === "Sum as Fraction of Total" ||
-                                type === "Count as Fraction of Total") {
-                                denomAgg = data.getAggregator([], []);
-                            }
-
-                            if (
-                                type === "Sum as Fraction of Rows" ||
-                                type === "Count as Fraction of Rows") {
-                                denomAgg = data.getAggregator(rowKey, []);
-                            }
-
-                            if (
-                                type === "Sum as Fraction of Columns" ||
-                                type === "Count as Fraction of Columns") {
-                                denomAgg = data.getAggregator([], colKey);
-                            }
-
-                            if (!denomAgg || typeof denomAgg.baseValue !== "function")
-                                return null;
-
-                            var denominator = denomAgg.baseValue();
-
-                            if (
-                                denominator === null ||
-                                denominator === undefined ||
-                                Number(denominator) === 0) {
-                                return null;
-                            }
-
-                            return numerator / denominator;
+                            return this.baseValue();
                         },
 
                         format: function (x) {
                             if (x === null || x === undefined)
                                 return "";
 
-                            if (type === "List unique values")
+                            if (spec.format === "text")
                                 return String(x);
-                            if (isFractionAggregator(type))
+                            if (spec.format === "integer")
+                                return String(x);
+                            if (spec.family === "fraction")
                                 return formatPercentFraction(x);
-                            if (isPercent100Aggregator(type))
+                            if (spec.format === "percent")
                                 return formatPercent100(x);
-                            if (isIntegerLikeAggregator(type))
-                                return String(x);
 
                             return formatNumber(x, digits);
                         }
@@ -650,7 +367,7 @@ HTMLWidgets.widget({
                 };
 
                 aggregator.numInputs = nInputs;
-                aggregator.displayName = displayType;
+                aggregator.displayName = spec.name;
 
                 return aggregator;
             };
@@ -1506,15 +1223,17 @@ HTMLWidgets.widget({
                         renderers);
 
                 var aggregators = {};
-                var allowedAggregators = asArray(x.allowed_aggregators);
+                var aggregatorInfo = asArray(x.aggregator_info);
 
-                if (allowedAggregators.length === 0) {
-                    allowedAggregators = defaultAggregatorNames();
+                if (aggregatorInfo.length === 0) {
+                    safePivotShowDependencyError(
+                        "safePivot error: no aggregator list was sent from R.");
+                    return;
                 }
 
-                allowedAggregators.forEach(function (name) {
-                    aggregators[name] = numericAggregator(
-                            name,
+                aggregatorInfo.forEach(function (spec) {
+                    aggregators[spec.name] = makeAggregator(
+                            spec,
                             getNumberOption(x.numeric_digits, 3),
                             x.missing_label);
                 });
@@ -1544,7 +1263,7 @@ HTMLWidgets.widget({
                     inclusions: cleanFilters(x.inclusions),
                     exclusions: cleanFilters(x.exclusions),
 
-                    unusedAttrsVertical: "auto",
+                    unusedAttrsVertical: x.unused_attrs_vertical === true,
 
                     onRefresh: function (config) {
                         var currentRendererName =

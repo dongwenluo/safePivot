@@ -122,6 +122,11 @@ safePivot_dependencies <- function() {
 #' @param plotly_config Optional named list of Plotly config values merged into
 #'   the default chart config.
 #' @param max_rows Maximum number of rows allowed for browser-side pivoting.
+#' @param unused_layout Where variables not yet used are listed: `"top"` (a
+#'   row above the table), `"left"` (a column beside the table), or `"auto"`
+#'   (the default), which uses the left column when the variable pills would
+#'   not fit in one row of roughly 800px. Use `"left"` for wide data so the
+#'   page does not become very wide.
 #' @param inclusions,exclusions Optional starting filters, as named lists of
 #'   values per variable (the same format PivotTable.js uses), for example
 #'   `exclusions = list(Species = "setosa")`. A value in `exclusions` starts
@@ -182,6 +187,7 @@ safePivot <- function(
     plotly_layout = NULL,
     plotly_config = NULL,
     max_rows = 100000,
+    unused_layout = c("auto", "left", "top"),
     inclusions = NULL,
     exclusions = NULL,
     width = "100%",
@@ -229,8 +235,9 @@ safePivot <- function(
     )
   }
   
-  allowed_aggregators <- safe_pivot_allowed_aggregators()
-  if (!aggregator %in% allowed_aggregators) {
+  unused_layout <- match.arg(unused_layout)
+
+  if (!aggregator %in% safe_pivot_allowed_aggregators()) {
     stop("Unsupported aggregator: ", aggregator, call. = FALSE)
   }
   
@@ -387,7 +394,8 @@ safePivot <- function(
     plotly_layout = plotly_layout %||% list(),
     plotly_config = plotly_config %||% list(),
     allowed_renderers = allowed_renderers,
-    allowed_aggregators = allowed_aggregators,
+    aggregator_info = safe_pivot_aggregator_info_for_js(),
+    unused_attrs_vertical = safe_pivot_unused_vertical(names(data), unused_layout),
     # as.list() keeps one-value filters as JSON arrays
     inclusions = lapply(inclusions, as.list),
     exclusions = lapply(exclusions, as.list)
@@ -415,5 +423,17 @@ safePivot <- function(
       knitr.defaultWidth = 1000,
       knitr.defaultHeight = 760
     )
+  )
+}
+
+# Should unused variables go in the left column?
+# "auto": yes when the pills would not fit in one row of about 800px
+# (each pill is roughly 8px per character plus 70px for padding and badge).
+safe_pivot_unused_vertical <- function(var_names, unused_layout = "auto") {
+  switch(
+    unused_layout,
+    left = TRUE,
+    top = FALSE,
+    auto = sum(nchar(var_names) * 8 + 70) > 800
   )
 }

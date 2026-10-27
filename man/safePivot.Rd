@@ -38,6 +38,7 @@ safePivot(
   plotly_layout = NULL,
   plotly_config = NULL,
   max_rows = 1e+05,
+  unused_layout = c("auto", "left", "top"),
   inclusions = NULL,
   exclusions = NULL,
   width = "100\%",
@@ -124,6 +125,12 @@ the default chart layout.}
 the default chart config.}
 
 \item{max_rows}{Maximum number of rows allowed for browser-side pivoting.}
+
+\item{unused_layout}{Where variables not yet used are listed: \code{"top"} (a
+row above the table), \code{"left"} (a column beside the table), or \code{"auto"}
+(the default), which uses the left column when the variable pills would
+not fit in one row of roughly 800px. Use \code{"left"} for wide data so the
+page does not become very wide.}
 
 \item{inclusions, exclusions}{Optional starting filters, as named lists of
 values per variable (the same format PivotTable.js uses), for example

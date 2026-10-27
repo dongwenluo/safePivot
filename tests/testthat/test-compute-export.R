@@ -885,6 +885,65 @@ test_that("safePivot carries renderer, heatmap, and Plotly options to the widget
 })
 
 
+test_that("aggregator registry is complete and consistent", {
+  reg <- safe_pivot_aggregator_registry()
+
+  expect_false(anyDuplicated(reg$name) > 0)
+  expect_true(all(reg$family %in% c(
+    "count", "count_unique", "list", "n", "percent", "fraction", "stat"
+  )))
+  expect_true(all(reg$format %in% c("integer", "number", "percent", "text")))
+  expect_true(all(!is.na(reg$measure[reg$family %in% c("n", "percent", "fraction")])))
+  expect_true(all(!is.na(reg$scope[reg$family %in% c("percent", "fraction")])))
+
+  # Every registry entry (and alias) is accepted by safe_pivot_compute().
+  for (agg in safe_pivot_allowed_aggregators()) {
+    expect_no_error(
+      safe_pivot_compute(iris, rows = "Species", vals = "Sepal.Length", aggregator = agg)
+    )
+  }
+
+  expect_equal(safe_pivot_normalize_aggregator("Missing %"), "Missing % within Cell")
+  expect_false(safe_pivot_requires_value("Count as Fraction of Rows"))
+  expect_true(safe_pivot_requires_value("Sum as Fraction of Rows"))
+})
+
+
+test_that("safePivot sends the aggregator list without aliases", {
+  w <- safePivot(iris)
+  names_sent <- vapply(w$x$aggregator_info, `[[`, character(1), "name")
+
+  expect_equal(names_sent, safe_pivot_aggregator_registry()$name)
+  expect_false("Missing %" %in% names_sent)
+})
+
+
+test_that("safePivot chooses where unused variables go", {
+  expect_false(safePivot(iris)$x$unused_attrs_vertical)
+  expect_true(safePivot(iris, unused_layout = "left")$x$unused_attrs_vertical)
+
+  wide <- as.data.frame(matrix(1, 2, 20, dimnames = list(NULL, paste0("variable_", 1:20))))
+  expect_true(safePivot(wide)$x$unused_attrs_vertical)
+  expect_false(safePivot(wide, unused_layout = "top")$x$unused_attrs_vertical)
+  expect_error(safePivot(iris, unused_layout = "bottom"))
+})
+
+
+test_that("grouped results are ordered by rows then columns", {
+  df <- data.frame(
+    a = factor(c("y", "x", "y", "x"), levels = c("y", "x")),
+    b = c("q", "p", "p", "q"),
+    v = 1:4
+  )
+
+  res <- safe_pivot_compute(df, rows = c("a", "b"), vals = "v", aggregator = "Sum")
+
+  expect_equal(as.character(res$long$a), c("y", "y", "x", "x"))
+  expect_equal(res$long$b, c("p", "q", "p", "q"))
+  expect_equal(res$long$.value, c(3, 1, 2, 4))
+})
+
+
 test_that("safePivot badges use the original column types", {
   df <- data.frame(
     d = as.Date("2024-01-01") + 0:2,

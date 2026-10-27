@@ -19,18 +19,18 @@
   --safePivot-badge-font-size: 11px;
 
   --safePivot-text: #0f172a;
-  --safePivot-text-muted: #64748b;
+  --safePivot-text-muted: #475569;
   --safePivot-surface: #ffffff;
   --safePivot-surface-alt: #f8fafc;
-  --safePivot-border: #e2e8f0;
-  --safePivot-border-strong: #cbd5e1;
+  --safePivot-border: #d8dee8;
+  --safePivot-border-strong: #94a3b8;
 
   --safePivot-accent: #2563eb;
   --safePivot-accent-soft: #eff6ff;
-  --safePivot-accent-border: #93c5fd;
+  --safePivot-accent-border: #60a5fa;
   --safePivot-focus: rgba(37, 99, 235, 0.35);
 
-  --safePivot-header-bg: #f1f5f9;
+  --safePivot-header-bg: #eef2f7;
   --safePivot-total-bg: #f8fafc;
   --safePivot-row-hover: #f1f5f9;
 
@@ -289,16 +289,16 @@
   user-select: none;
 }
 
-.safePivot-wrapper .safePivot-type-num  { background: #dbeafe; color: #1e40af; }
-.safePivot-wrapper .safePivot-type-int  { background: #e0e7ff; color: #3730a3; }
-.safePivot-wrapper .safePivot-type-chr  { background: #f1f5f9; color: #334155; }
-.safePivot-wrapper .safePivot-type-fct  { background: #f3e8ff; color: #6b21a8; }
-.safePivot-wrapper .safePivot-type-ord  { background: #ede9fe; color: #5b21b6; }
-.safePivot-wrapper .safePivot-type-date { background: #d1fae5; color: #065f46; }
+.safePivot-wrapper .safePivot-type-num  { background: #dbeafe; color: #1e3a8a; }
+.safePivot-wrapper .safePivot-type-int  { background: #e0e7ff; color: #312e81; }
+.safePivot-wrapper .safePivot-type-chr  { background: #e2e8f0; color: #1e293b; }
+.safePivot-wrapper .safePivot-type-fct  { background: #f3e8ff; color: #581c87; }
+.safePivot-wrapper .safePivot-type-ord  { background: #ede9fe; color: #4c1d95; }
+.safePivot-wrapper .safePivot-type-date { background: #d1fae5; color: #064e3b; }
 .safePivot-wrapper .safePivot-type-time { background: #ccfbf1; color: #115e59; }
-.safePivot-wrapper .safePivot-type-lgl  { background: #fef3c7; color: #92400e; }
-.safePivot-wrapper .safePivot-type-list { background: #ffedd5; color: #9a3412; }
-.safePivot-wrapper .safePivot-type-obj  { background: #ffe4e6; color: #9f1239; }
+.safePivot-wrapper .safePivot-type-lgl  { background: #fef3c7; color: #78350f; }
+.safePivot-wrapper .safePivot-type-list { background: #ffedd5; color: #7c2d12; }
+.safePivot-wrapper .safePivot-type-obj  { background: #ffe4e6; color: #881337; }
 
 
 /* ------------------------------------------------------------

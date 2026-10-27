@@ -18,6 +18,13 @@
 
 ## Look and layout
 
+* New `unused_layout` argument in `safePivot()`: `"top"`, `"left"`, or
+  `"auto"` (default). Auto lists unused variables in a column on the left
+  when their pills would not fit in one row (about 800px), so wide data no
+  longer makes the whole widget very wide.
+
+* Stronger text contrast: darker secondary text, borders and badge text.
+
 * Rewrote `safePivot.css`: one set of colour tokens, no duplicate blocks, and
   far fewer `!important` rules. Variables are single pills (previously a pill
   inside a pill) with the type badge inside, drop zones are lighter, and the
@@ -26,6 +33,21 @@
 
 * Default font sizes are smaller: `ui_font_size = 14`, `pill_font_size = 14`,
   `table_font_size = 15`, `badge_font_size = 11` (were 16, 17, 18, 12).
+
+## Internals
+
+* One aggregator table (`R/aggregators.R`) now drives both the R
+  computations and the browser widget. The browser builds its aggregators
+  from that table, so the two lists can no longer drift apart. The old names
+  `"Missing %"` and `"Non-missing %"` are still accepted from R, but no longer
+  appear twice in the dropdown.
+
+* Grouping in `safe_pivot_compute()` uses `dplyr` with vectorised counts:
+  about 3x faster for the missing/zero percentage and fraction aggregators on
+  large data. Values are unchanged. Result rows are now ordered by the row
+  variables, then the column variables (each row group stays together, as
+  in the browser), and a numeric grouping variable with `NA` values gets an
+  `NA` group instead of those rows being dropped.
 
 ## Bug fixes
 
