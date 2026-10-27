@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">safePivot</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,6 +37,39 @@
       <small>Source: <a href="https://github.com/dongwenluo/safePivot/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.2.0" id="safepivot-020">safePivot 0.2.0<a class="anchor" aria-label="anchor" href="#safepivot-020"></a></h2>
+<ul><li><p><code><a href="../reference/safe_pivot_compute_from_config.html">safe_pivot_compute_from_config()</a></code> now applies the filters chosen in the browser (<code>inclusions</code> / <code>exclusions</code> in the Shiny config), so exported and report results match the on-screen pivot. The applied filters are returned in <code>res$config</code>.</p></li>
+<li><p><code><a href="../reference/safe_pivot_compute_from_config.html">safe_pivot_compute_from_config()</a></code> no longer refills a cleared row, column, or value field from the <code>default_*</code> arguments. Defaults are only used when <code>config</code> is <code>NULL</code>.</p></li>
+<li><p><code><a href="../reference/safePivot.html">safePivot()</a></code> gains <code>inclusions</code> and <code>exclusions</code> arguments for starting filters, and <code><a href="../reference/safe_pivot_compute_from_config.html">safe_pivot_compute_from_config()</a></code> gains matching <code>default_inclusions</code> / <code>default_exclusions</code>.</p></li>
+<li><p>The <code>min-height: 100%</code> rule now applies only to safePivot’s own container, not to every htmlwidget on the page.</p></li>
+</ul><div class="section level3">
+<h3 id="look-and-layout-0-2-0">Look and layout<a class="anchor" aria-label="anchor" href="#look-and-layout-0-2-0"></a></h3>
+<ul><li><p>New <code>unused_layout</code> argument in <code><a href="../reference/safePivot.html">safePivot()</a></code>: <code>"top"</code>, <code>"left"</code>, or <code>"auto"</code> (default). Auto lists unused variables in a column on the left when their pills would not fit in one row (about 800px), so wide data no longer makes the whole widget very wide.</p></li>
+<li><p>Stronger text contrast: darker secondary text, borders and badge text.</p></li>
+<li><p>Rewrote <code>safePivot.css</code>: one set of colour tokens, no duplicate blocks, and far fewer <code>!important</code> rules. Variables are single pills (previously a pill inside a pill) with the type badge inside, drop zones are lighter, and the result table has a clean header, aligned numbers, row hover, and shaded totals. Filter boxes, dropdowns and sort buttons are restyled to match.</p></li>
+<li><p>Default font sizes are smaller: <code>ui_font_size = 14</code>, <code>pill_font_size = 14</code>, <code>table_font_size = 15</code>, <code>badge_font_size = 11</code> (were 16, 17, 18, 12).</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-0-2-0">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-2-0"></a></h3>
+<ul><li><p>README (pkgdown home page) and both articles now include screenshots of the widget: table, heatmap, bar chart, type badges, factor order, conditional formatting, filters, the wide-data layout, and the Shiny export apps. The heatmap and chart examples now use <code>mtcars</code> (cyl x gear) so the pictures stay readable, and the chart example uses the correct argument <code>plot_default_height</code> (it used <code>plot_height</code>, which does not exist).</p></li>
+<li><p><code>tools/doc-figures/</code> regenerates the screenshots from the documented code (R + Node/Playwright); see the header of <code>figures.R</code>.</p></li>
+<li><p>The aggregator and both sort-order buttons stay on one line in narrow layouts.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="internals-0-2-0">Internals<a class="anchor" aria-label="anchor" href="#internals-0-2-0"></a></h3>
+<ul><li><p>One aggregator table (<code>R/aggregators.R</code>) now drives both the R computations and the browser widget. The browser builds its aggregators from that table, so the two lists can no longer drift apart. The old names <code>"Missing %"</code> and <code>"Non-missing %"</code> are still accepted from R, but no longer appear twice in the dropdown.</p></li>
+<li><p>Grouping in <code><a href="../reference/safe_pivot_compute.html">safe_pivot_compute()</a></code> uses <code>dplyr</code> with vectorised counts: about 3x faster for the missing/zero percentage and fraction aggregators on large data. Values are unchanged. Result rows are now ordered by the row variables, then the column variables (each row group stays together, as in the browser), and a numeric grouping variable with <code>NA</code> values gets an <code>NA</code> group instead of those rows being dropped.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-2-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-2-0"></a></h3>
+<ul><li><p>High/low conditional formatting now scales over data cells only. Totals were included, so they were always “high” and most cells came out “low”.</p></li>
+<li><p>Type badges are computed from the original data, so Date and date-time columns show <code>date</code> / <code>time</code> instead of <code>chr</code>.</p></li>
+<li><p>Charts are sized to the space right of the rows panel (and of the unused variables column, when it is on the left), so the legend is no longer clipped, and resizing keeps the chart options passed from R (<code>plot_default_height</code>, font sizes, <code>plotly_layout</code>, …).</p></li>
+<li><p>Removed panel-height syncing code that had no effect (<code>min-height</code> does not apply to table cells).</p></li>
+<li><p>Declared <code>Depends: R (&gt;= 4.1.0)</code> (the code uses the native pipe) and cleaned up <code>.Rbuildignore</code>.</p></li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.1" id="safepivot-011">safePivot 0.1.1<a class="anchor" aria-label="anchor" href="#safepivot-011"></a></h2>
 <div class="section level3">
@@ -143,7 +176,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

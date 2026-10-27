@@ -50,12 +50,19 @@ R Markdown, or Shiny.
 safePivot(
   iris,
   rows = "Species",
-  cols = "Petal.Width",
   vals = "Sepal.Length",
   aggregator = "Median",
   renderer = "Table"
 )
 ```
+
+![safePivot table: Species in rows, median Sepal.Length per
+species](figures/basic.png)
+
+safePivot table: Species in rows, median Sepal.Length per species
+
+Drag variables between the unused list, the rows area (left) and the
+columns area (top); pick the aggregator and value variable at top left.
 
 ## Heatmap
 
@@ -64,15 +71,19 @@ SafePivot supports table-style heatmaps:
 ``` r
 
 safePivot(
-  iris,
-  rows = "Species",
-  cols = "Petal.Width",
-  vals = "Sepal.Length",
-  aggregator = "Median",
+  mtcars,
+  rows = "cyl",
+  cols = "gear",
+  vals = "mpg",
+  aggregator = "Mean",
   renderer = "Heatmap",
   heatmap_palette = "green"
 )
 ```
+
+![Heatmap of mean mpg by cylinders and gears](figures/heatmap.png)
+
+Heatmap of mean mpg by cylinders and gears
 
 Heatmap renderers include:
 
@@ -94,15 +105,20 @@ SafePivot includes lightweight Plotly chart renderers:
 ``` r
 
 safePivot(
-  iris,
-  rows = "Species",
-  cols = "Petal.Width",
-  vals = "Sepal.Length",
+  mtcars,
+  rows = "cyl",
+  cols = "gear",
+  vals = "mpg",
   aggregator = "Mean",
   renderer = "Bar Chart",
-  plot_height = 620
+  plot_default_height = 520
 )
 ```
+
+![Bar chart of mean mpg by gears, one bar per cylinder
+count](figures/chart.png)
+
+Bar chart of mean mpg by gears, one bar per cylinder count
 
 Supported lightweight chart renderers include:
 
@@ -180,6 +196,38 @@ safe_pivot_compute(
 #> 2 B              1      0
 #> 3 C              0      0
 ```
+
+In the widget, conditional formatting marks these cases directly in the
+table:
+
+``` r
+
+quality_dat <- data.frame(
+  row = c("A", "A", "A", "B", "B", "C"),
+  col = c("X", "X", "Y", "X", "Y", "X"),
+  y = c(0, 1, NA, 0, 5, NA)
+)
+
+safePivot(
+  quality_dat,
+  rows = "row",
+  cols = "col",
+  vals = "y",
+  aggregator = "Sum",
+  renderer = "Table",
+  conditional_format = TRUE,
+  conditional_format_mode = "both"
+)
+```
+
+![Conditional formatting: zero cell in yellow, highest value in orange,
+empty cells hatched](figures/conditional-format.png)
+
+Conditional formatting: zero cell in yellow, highest value in orange,
+empty cells hatched
+
+Zero cells are yellow, the highest values orange, the lowest blue, and
+cells with no records are hatched grey.
 
 ## Fraction aggregators
 
@@ -262,6 +310,45 @@ safePivot(
   respect_factor_order = TRUE
 )
 ```
+
+## Starting filters and layout
+
+Start with some values filtered out, the same way a user would untick
+them in a variable’s filter box:
+
+``` r
+
+safePivot(
+  iris,
+  rows = "Species",
+  vals = "Sepal.Length",
+  aggregator = "Mean",
+  exclusions = list(Species = "setosa")
+)
+```
+
+![Filter box for Species with setosa unticked; the table shows only
+versicolor and virginica](figures/filters.png)
+
+Filter box for Species with setosa unticked; the table shows only
+versicolor and virginica
+
+`inclusions` works the other way round: only the listed values start
+ticked.
+
+For data with many columns, `unused_layout = "auto"` (the default) lists
+unused variables in a column on the left instead of a long row above the
+table. Use `"left"` or `"top"` to choose.
+
+``` r
+
+safePivot(mtcars, rows = "cyl", cols = "gear", unused_layout = "left")
+```
+
+![Unused mtcars variables listed in a column on the left of the
+table](figures/wide-layout.png)
+
+Unused mtcars variables listed in a column on the left of the table
 
 ## Export
 

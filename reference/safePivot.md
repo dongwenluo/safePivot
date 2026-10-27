@@ -26,10 +26,10 @@ safePivot(
   conditional_format_mode = "both",
   high_threshold = 0.85,
   low_threshold = 0.15,
-  ui_font_size = 16,
-  pill_font_size = 17,
-  table_font_size = 18,
-  badge_font_size = 12,
+  ui_font_size = 14,
+  pill_font_size = 14,
+  table_font_size = 15,
+  badge_font_size = 11,
   plot_default_height = 620,
   plot_min_height = 520,
   plot_max_width = 1150,
@@ -41,6 +41,9 @@ safePivot(
   plotly_layout = NULL,
   plotly_config = NULL,
   max_rows = 1e+05,
+  unused_layout = c("auto", "left", "top"),
+  inclusions = NULL,
+  exclusions = NULL,
   width = "100%",
   height = NULL
 )
@@ -175,6 +178,27 @@ safePivot(
 - max_rows:
 
   Maximum number of rows allowed for browser-side pivoting.
+
+- unused_layout:
+
+  Where variables not yet used are listed: `"top"` (a row above the
+  table), `"left"` (a column beside the table), or `"auto"` (the
+  default), which uses the left column when the variable pills would not
+  fit in one row of roughly 800px. Use `"left"` for wide data so the
+  page does not become very wide.
+
+- inclusions, exclusions:
+
+  Optional starting filters, as named lists of values per variable (the
+  same format PivotTable.js uses), for example
+  `exclusions = list(Species = "setosa")`. A value in `exclusions`
+  starts unticked in that variable's filter box; when a variable has
+  `inclusions`, only those values start ticked. Missing values are
+  written as `missing_label` for categorical variables and `"null"`
+  otherwise. Pass the same lists as `default_inclusions` /
+  `default_exclusions` to
+  [`safe_pivot_compute_from_config()`](https://dongwenluo.github.io/safePivot/reference/safe_pivot_compute_from_config.md)
+  so R matches the browser before the widget reports its state.
 
 - width:
 

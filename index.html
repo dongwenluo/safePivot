@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="index.html">safePivot</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -98,6 +98,8 @@
 <li>R factor-level ordering.</li>
 <li>Data-type badges for draggable variables.</li>
 <li>Browser-side conditional formatting for table output.</li>
+<li>Starting filters (<code>inclusions</code> / <code>exclusions</code>) that are also applied on export.</li>
+<li>Unused variables listed on the left for wide data (<code>unused_layout</code>).</li>
 <li>Heatmap renderers with selectable palettes.</li>
 <li>Lightweight Plotly chart renderers.</li>
 </ul>
@@ -113,20 +115,23 @@
 <span>  aggregator <span class="op">=</span> <span class="st">"Median"</span>,</span>
 <span>  renderer <span class="op">=</span> <span class="st">"Table"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-basic.png" alt="safePivot table: Species in rows, median Sepal.Length per species" width="1069"></p>
+<p>Drag variables between the unused list, the rows area (left) and the columns area (top); pick the aggregator and value variable at top left.</p>
 </div>
 <div class="section level2">
 <h2 id="heatmap-renderer">Heatmap renderer<a class="anchor" aria-label="anchor" href="#heatmap-renderer"></a>
 </h2>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/safePivot.html">safePivot</a></span><span class="op">(</span></span>
-<span>  <span class="va">iris</span>,</span>
-<span>  rows <span class="op">=</span> <span class="st">"Species"</span>,</span>
-<span>  cols <span class="op">=</span> <span class="st">"Petal.Width"</span>,</span>
-<span>  vals <span class="op">=</span> <span class="st">"Sepal.Length"</span>,</span>
-<span>  aggregator <span class="op">=</span> <span class="st">"Median"</span>,</span>
+<span>  <span class="va">mtcars</span>,</span>
+<span>  rows <span class="op">=</span> <span class="st">"cyl"</span>,</span>
+<span>  cols <span class="op">=</span> <span class="st">"gear"</span>,</span>
+<span>  vals <span class="op">=</span> <span class="st">"mpg"</span>,</span>
+<span>  aggregator <span class="op">=</span> <span class="st">"Mean"</span>,</span>
 <span>  renderer <span class="op">=</span> <span class="st">"Heatmap"</span>,</span>
 <span>  heatmap_palette <span class="op">=</span> <span class="st">"green"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-heatmap.png" alt="Heatmap of mean mpg by cylinders and gears" width="1031"></p>
 <p>Available heatmap palettes are:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="st">"blue"</span></span>
@@ -147,14 +152,15 @@
 <p><code>safePivot</code> includes lightweight Plotly renderers for quick visual summaries:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/safePivot.html">safePivot</a></span><span class="op">(</span></span>
-<span>  <span class="va">iris</span>,</span>
-<span>  rows <span class="op">=</span> <span class="st">"Species"</span>,</span>
-<span>  cols <span class="op">=</span> <span class="st">"Petal.Width"</span>,</span>
-<span>  vals <span class="op">=</span> <span class="st">"Sepal.Length"</span>,</span>
+<span>  <span class="va">mtcars</span>,</span>
+<span>  rows <span class="op">=</span> <span class="st">"cyl"</span>,</span>
+<span>  cols <span class="op">=</span> <span class="st">"gear"</span>,</span>
+<span>  vals <span class="op">=</span> <span class="st">"mpg"</span>,</span>
 <span>  aggregator <span class="op">=</span> <span class="st">"Mean"</span>,</span>
 <span>  renderer <span class="op">=</span> <span class="st">"Bar Chart"</span>,</span>
-<span>  plot_height <span class="op">=</span> <span class="fl">620</span></span>
+<span>  plot_default_height <span class="op">=</span> <span class="fl">520</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-chart.png" alt="Bar chart of mean mpg by gears, one bar per cylinder count" width="1200"></p>
 <p>Supported chart renderers include:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="st">"Horizontal Bar Chart"</span></span>
@@ -220,14 +226,33 @@
 </tbody>
 </table>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/safePivot.html">safePivot</a></span><span class="op">(</span></span>
-<span>  <span class="va">iris</span>,</span>
-<span>  rows <span class="op">=</span> <span class="st">"Species"</span>,</span>
-<span>  vals <span class="op">=</span> <span class="st">"Sepal.Length"</span>,</span>
-<span>  aggregator <span class="op">=</span> <span class="st">"Median"</span>,</span>
-<span>  renderer <span class="op">=</span> <span class="st">"Table"</span>,</span>
-<span>  show_type_badges <span class="op">=</span> <span class="cn">TRUE</span></span>
+<code class="sourceCode R"><span><span class="va">badge_dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  id <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
+<span>  score <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.2</span>, <span class="fl">3.4</span>, <span class="fl">5.6</span><span class="op">)</span>,</span>
+<span>  group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"A"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  ordered_group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"low"</span>, <span class="st">"medium"</span>, <span class="st">"high"</span><span class="op">)</span>,</span>
+<span>    levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"low"</span>, <span class="st">"medium"</span>, <span class="st">"high"</span><span class="op">)</span>,</span>
+<span>    ordered <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span><span class="op">)</span>,</span>
+<span>  flag <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  harvest_date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2026-01-01"</span>, <span class="st">"2026-01-02"</span>, <span class="st">"2026-01-03"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  timestamp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"2026-01-01 08:00:00"</span>,</span>
+<span>    <span class="st">"2026-01-02 08:00:00"</span>,</span>
+<span>    <span class="st">"2026-01-03 08:00:00"</span></span>
+<span>  <span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/safePivot.html">safePivot</a></span><span class="op">(</span></span>
+<span>  <span class="va">badge_dat</span>,</span>
+<span>  vals <span class="op">=</span> <span class="st">"score"</span>,</span>
+<span>  aggregator <span class="op">=</span> <span class="st">"Mean"</span>,</span>
+<span>  show_type_badges <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  unused_layout <span class="op">=</span> <span class="st">"top"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-badges.png" alt="Variable pills with type badges: int, num, fct, ord, chr, lgl, date and time" width="877"></p>
 </div>
 <div class="section level2">
 <h2 id="factor-order">Factor order<a class="anchor" aria-label="anchor" href="#factor-order"></a>
@@ -248,6 +273,7 @@
 <span>  renderer <span class="op">=</span> <span class="st">"Table"</span>,</span>
 <span>  respect_factor_order <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-factor-order.png" alt="Species listed in factor-level order: virginica, versicolor, setosa" width="1069"></p>
 <p>For ordered factors, define levels explicitly instead of relying on alphabetical order:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ordered_dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
@@ -265,10 +291,10 @@
 <p><code>safePivot</code> uses explicit aggregation rules so that empty pivot cells, observed missing values, and observed zero values are not confused.</p>
 <table class="table">
 <colgroup>
-<col width="25%">
-<col width="25%">
-<col width="25%">
-<col width="25%">
+<col width="13%">
+<col width="30%">
+<col width="24%">
+<col width="31%">
 </colgroup>
 <thead><tr>
 <th>Case</th>
@@ -328,8 +354,8 @@
 </h3>
 <table class="table">
 <colgroup>
-<col width="50%">
-<col width="50%">
+<col width="25%">
+<col width="74%">
 </colgroup>
 <thead><tr>
 <th>Aggregator</th>
@@ -377,9 +403,9 @@
 <p>Within-cell percentages use only records inside the current pivot cell.</p>
 <table class="table">
 <colgroup>
-<col width="33%">
-<col width="33%">
-<col width="33%">
+<col width="34%">
+<col width="26%">
+<col width="38%">
 </colgroup>
 <thead><tr>
 <th>Aggregator</th>
@@ -434,9 +460,9 @@ Zero % within Cell    = 1 / 2 * 100 = 50</code></pre>
 <p>Row, column, and total percentages express the current cell as a percentage of a larger denominator.</p>
 <table class="table">
 <colgroup>
-<col width="33%">
-<col width="33%">
-<col width="33%">
+<col width="32%">
+<col width="26%">
+<col width="40%">
 </colgroup>
 <thead><tr>
 <th>Aggregator</th>
@@ -531,8 +557,8 @@ Zero % within Cell    = 1 / 2 * 100 = 50</code></pre>
 <p>Fraction aggregators are different from missing/zero percentage aggregators. They use numeric sums or record counts as denominators.</p>
 <table class="table">
 <colgroup>
-<col width="50%">
-<col width="50%">
+<col width="39%">
+<col width="60%">
 </colgroup>
 <thead><tr>
 <th>Aggregator</th>
@@ -638,6 +664,8 @@ B x Y = 4 / 10 * 100 = 40</code></pre>
 <span>  conditional_format <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  conditional_format_mode <span class="op">=</span> <span class="st">"both"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-conditional-format.png" alt="Conditional formatting: zero cell in yellow, highest value in orange, empty cells hatched" width="666"></p>
+<p>Zero cells are yellow, the highest values orange, the lowest blue, and cells with no records are hatched grey. Totals are never highlighted.</p>
 <p>For heatmap renderers, use <code>heatmap_palette</code> rather than <code>conditional_format_mode</code>. This keeps the heatmap colour scale clear and avoids overwriting heatmap colours.</p>
 </div>
 <div class="section level2">
@@ -748,15 +776,51 @@ B x Y = 4 / 10 * 100 = 40</code></pre>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/shiny/man/shinyApp.html" class="external-link">shinyApp</a></span><span class="op">(</span><span class="va">ui</span>, <span class="va">server</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-shiny-export.png" alt="Shiny app with a renderer selector and CSV / Excel download buttons beside the pivot table" width="1200"></p>
 <p><code>input$pivot_config</code> stores the current drag-and-drop state, including rows, columns, values, aggregator, renderer, inclusions, and exclusions.</p>
+<p><code><a href="reference/safe_pivot_compute_from_config.html">safe_pivot_compute_from_config()</a></code> applies the browser’s filters, so the export matches the table on screen. The <code>default_*</code> arguments are only used while <code>input$pivot_config</code> is still <code>NULL</code>; a field the user has cleared stays empty.</p>
+</div>
+<div class="section level2">
+<h2 id="starting-filters">Starting filters<a class="anchor" aria-label="anchor" href="#starting-filters"></a>
+</h2>
+<p>Start the widget with some values filtered out. Pass the same lists to <code><a href="reference/safe_pivot_compute_from_config.html">safe_pivot_compute_from_config()</a></code> as <code>default_inclusions</code> / <code>default_exclusions</code> so the export matches before the widget reports back.</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/safePivot.html">safePivot</a></span><span class="op">(</span></span>
+<span>  <span class="va">iris</span>,</span>
+<span>  rows <span class="op">=</span> <span class="st">"Species"</span>,</span>
+<span>  vals <span class="op">=</span> <span class="st">"Sepal.Length"</span>,</span>
+<span>  aggregator <span class="op">=</span> <span class="st">"Mean"</span>,</span>
+<span>  exclusions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Species <span class="op">=</span> <span class="st">"setosa"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/safe_pivot_compute_from_config.html">safe_pivot_compute_from_config</a></span><span class="op">(</span></span>
+<span>  <span class="va">iris</span>,</span>
+<span>  config <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  default_rows <span class="op">=</span> <span class="st">"Species"</span>,</span>
+<span>  default_vals <span class="op">=</span> <span class="st">"Sepal.Length"</span>,</span>
+<span>  default_aggregator <span class="op">=</span> <span class="st">"Mean"</span>,</span>
+<span>  default_exclusions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Species <span class="op">=</span> <span class="st">"setosa"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-filters.png" alt="Filter box for Species with setosa unticked; the table shows only versicolor and virginica" width="1069"></p>
+<p>A filtered variable is shown in blue italics. Click its ▾ to open the filter box.</p>
+<p>Missing values are written as the <code>missing_label</code> (default <code>"(Missing)"</code>) for text and factor columns, and as <code>"null"</code> for numeric columns.</p>
+</div>
+<div class="section level2">
+<h2 id="layout-for-wide-data">Layout for wide data<a class="anchor" aria-label="anchor" href="#layout-for-wide-data"></a>
+</h2>
+<p>With many variables, a row of variable pills above the table makes the whole widget very wide. <code>unused_layout = "auto"</code> (the default) moves the unused variables to a column on the left when they would not fit in one row; use <code>"left"</code> or <code>"top"</code> to choose yourself.</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/safePivot.html">safePivot</a></span><span class="op">(</span><span class="va">mtcars</span>, rows <span class="op">=</span> <span class="st">"cyl"</span>, cols <span class="op">=</span> <span class="st">"gear"</span>, unused_layout <span class="op">=</span> <span class="st">"left"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-wide-layout.png" alt="Unused mtcars variables listed in a column on the left of the table" width="914"></p>
+<p>Font sizes default to 14px for the controls and pills and 15px for the table. Change them with <code>ui_font_size</code>, <code>pill_font_size</code>, <code>table_font_size</code>, and <code>badge_font_size</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="aggregator-summary">Aggregator summary<a class="anchor" aria-label="anchor" href="#aggregator-summary"></a>
 </h2>
 <table class="table">
 <colgroup>
-<col width="50%">
-<col width="50%">
+<col width="18%">
+<col width="81%">
 </colgroup>
 <thead><tr>
 <th>Type</th>
@@ -858,7 +922,7 @@ B x Y = 4 / 10 * 100 = 40</code></pre>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">safePivot</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -114,11 +114,17 @@ browser, R Markdown, or Shiny.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/safePivot.html">safePivot</a></span><span class="op">(</span></span>
 <span>  <span class="va">iris</span>,</span>
 <span>  rows <span class="op">=</span> <span class="st">"Species"</span>,</span>
-<span>  cols <span class="op">=</span> <span class="st">"Petal.Width"</span>,</span>
 <span>  vals <span class="op">=</span> <span class="st">"Sepal.Length"</span>,</span>
 <span>  aggregator <span class="op">=</span> <span class="st">"Median"</span>,</span>
 <span>  renderer <span class="op">=</span> <span class="st">"Table"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<div class="float">
+<img src="figures/basic.png" style="max-width:100%" width="1069" alt="safePivot table: Species in rows, median Sepal.Length per species"><div class="figcaption">safePivot table: Species in rows, median
+Sepal.Length per species</div>
+</div>
+<p>Drag variables between the unused list, the rows area (left) and the
+columns area (top); pick the aggregator and value variable at top
+left.</p>
 </div>
 <div class="section level2">
 <h2 id="heatmap">Heatmap<a class="anchor" aria-label="anchor" href="#heatmap"></a>
@@ -126,14 +132,17 @@ browser, R Markdown, or Shiny.</p>
 <p>SafePivot supports table-style heatmaps:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/safePivot.html">safePivot</a></span><span class="op">(</span></span>
-<span>  <span class="va">iris</span>,</span>
-<span>  rows <span class="op">=</span> <span class="st">"Species"</span>,</span>
-<span>  cols <span class="op">=</span> <span class="st">"Petal.Width"</span>,</span>
-<span>  vals <span class="op">=</span> <span class="st">"Sepal.Length"</span>,</span>
-<span>  aggregator <span class="op">=</span> <span class="st">"Median"</span>,</span>
+<span>  <span class="va">mtcars</span>,</span>
+<span>  rows <span class="op">=</span> <span class="st">"cyl"</span>,</span>
+<span>  cols <span class="op">=</span> <span class="st">"gear"</span>,</span>
+<span>  vals <span class="op">=</span> <span class="st">"mpg"</span>,</span>
+<span>  aggregator <span class="op">=</span> <span class="st">"Mean"</span>,</span>
 <span>  renderer <span class="op">=</span> <span class="st">"Heatmap"</span>,</span>
 <span>  heatmap_palette <span class="op">=</span> <span class="st">"green"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<div class="float">
+<img src="figures/heatmap.png" style="max-width:100%" width="1031" alt="Heatmap of mean mpg by cylinders and gears"><div class="figcaption">Heatmap of mean mpg by cylinders and gears</div>
+</div>
 <p>Heatmap renderers include:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="st">"Heatmap"</span></span>
@@ -149,14 +158,18 @@ SafePivot cell-colour classes.</p>
 <p>SafePivot includes lightweight Plotly chart renderers:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/safePivot.html">safePivot</a></span><span class="op">(</span></span>
-<span>  <span class="va">iris</span>,</span>
-<span>  rows <span class="op">=</span> <span class="st">"Species"</span>,</span>
-<span>  cols <span class="op">=</span> <span class="st">"Petal.Width"</span>,</span>
-<span>  vals <span class="op">=</span> <span class="st">"Sepal.Length"</span>,</span>
+<span>  <span class="va">mtcars</span>,</span>
+<span>  rows <span class="op">=</span> <span class="st">"cyl"</span>,</span>
+<span>  cols <span class="op">=</span> <span class="st">"gear"</span>,</span>
+<span>  vals <span class="op">=</span> <span class="st">"mpg"</span>,</span>
 <span>  aggregator <span class="op">=</span> <span class="st">"Mean"</span>,</span>
 <span>  renderer <span class="op">=</span> <span class="st">"Bar Chart"</span>,</span>
-<span>  plot_height <span class="op">=</span> <span class="fl">620</span></span>
+<span>  plot_default_height <span class="op">=</span> <span class="fl">520</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<div class="float">
+<img src="figures/chart.png" style="max-width:100%" width="1200" alt="Bar chart of mean mpg by gears, one bar per cylinder count"><div class="figcaption">Bar chart of mean mpg by gears, one bar per
+cylinder count</div>
+</div>
 <p>Supported lightweight chart renderers include:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="st">"Horizontal Bar Chart"</span></span>
@@ -219,12 +232,37 @@ requires a larger Plotly bundle and custom hierarchy handling.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A              0      0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> B              1      0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> C              0      0</span></span></code></pre></div>
+<p>In the widget, conditional formatting marks these cases directly in
+the table:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">quality_dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  row <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"A"</span>, <span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"B"</span>, <span class="st">"C"</span><span class="op">)</span>,</span>
+<span>  col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"X"</span>, <span class="st">"X"</span>, <span class="st">"Y"</span>, <span class="st">"X"</span>, <span class="st">"Y"</span>, <span class="st">"X"</span><span class="op">)</span>,</span>
+<span>  y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="cn">NA</span>, <span class="fl">0</span>, <span class="fl">5</span>, <span class="cn">NA</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/safePivot.html">safePivot</a></span><span class="op">(</span></span>
+<span>  <span class="va">quality_dat</span>,</span>
+<span>  rows <span class="op">=</span> <span class="st">"row"</span>,</span>
+<span>  cols <span class="op">=</span> <span class="st">"col"</span>,</span>
+<span>  vals <span class="op">=</span> <span class="st">"y"</span>,</span>
+<span>  aggregator <span class="op">=</span> <span class="st">"Sum"</span>,</span>
+<span>  renderer <span class="op">=</span> <span class="st">"Table"</span>,</span>
+<span>  conditional_format <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  conditional_format_mode <span class="op">=</span> <span class="st">"both"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<div class="float">
+<img src="figures/conditional-format.png" style="max-width:100%" width="666" alt="Conditional formatting: zero cell in yellow, highest value in orange, empty cells hatched"><div class="figcaption">Conditional formatting: zero cell in yellow,
+highest value in orange, empty cells hatched</div>
+</div>
+<p>Zero cells are yellow, the highest values orange, the lowest blue,
+and cells with no records are hatched grey.</p>
 </div>
 <div class="section level2">
 <h2 id="fraction-aggregators">Fraction aggregators<a class="anchor" aria-label="anchor" href="#fraction-aggregators"></a>
 </h2>
 <p>SafePivot includes sum and count fraction aggregators:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="st">"Sum as Fraction of Total"</span></span>
 <span><span class="st">"Sum as Fraction of Rows"</span></span>
 <span><span class="st">"Sum as Fraction of Columns"</span></span>
@@ -232,7 +270,7 @@ requires a larger Plotly bundle and custom hierarchy handling.</p>
 <span><span class="st">"Count as Fraction of Rows"</span></span>
 <span><span class="st">"Count as Fraction of Columns"</span></span></code></pre></div>
 <p>For example:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/safe_pivot_compute.html">safe_pivot_compute</a></span><span class="op">(</span></span>
 <span>  <span class="va">iris</span>,</span>
 <span>  rows <span class="op">=</span> <span class="st">"Species"</span>,</span>
@@ -249,7 +287,7 @@ requires a larger Plotly bundle and custom hierarchy handling.</p>
 <h2 id="factor-ordering">Factor ordering<a class="anchor" aria-label="anchor" href="#factor-ordering"></a>
 </h2>
 <p>SafePivot can respect R factor-level ordering.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dat2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  treatment <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Control"</span>, <span class="st">"Low"</span>, <span class="st">"Medium"</span>, <span class="st">"High"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">4</span><span class="op">)</span>,</span>
@@ -278,7 +316,7 @@ requires a larger Plotly bundle and custom hierarchy handling.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> Medium        18     19     20     21</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> High          22     23     24     25</span></span></code></pre></div>
 <p>For the interactive widget:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/safePivot.html">safePivot</a></span><span class="op">(</span></span>
 <span>  <span class="va">dat2</span>,</span>
 <span>  rows <span class="op">=</span> <span class="st">"treatment"</span>,</span>
@@ -290,10 +328,40 @@ requires a larger Plotly bundle and custom hierarchy handling.</p>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="starting-filters-and-layout">Starting filters and layout<a class="anchor" aria-label="anchor" href="#starting-filters-and-layout"></a>
+</h2>
+<p>Start with some values filtered out, the same way a user would untick
+them in a variable’s filter box:</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/safePivot.html">safePivot</a></span><span class="op">(</span></span>
+<span>  <span class="va">iris</span>,</span>
+<span>  rows <span class="op">=</span> <span class="st">"Species"</span>,</span>
+<span>  vals <span class="op">=</span> <span class="st">"Sepal.Length"</span>,</span>
+<span>  aggregator <span class="op">=</span> <span class="st">"Mean"</span>,</span>
+<span>  exclusions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Species <span class="op">=</span> <span class="st">"setosa"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<div class="float">
+<img src="figures/filters.png" style="max-width:100%" width="1069" alt="Filter box for Species with setosa unticked; the table shows only versicolor and virginica"><div class="figcaption">Filter box for Species with setosa unticked; the
+table shows only versicolor and virginica</div>
+</div>
+<p><code>inclusions</code> works the other way round: only the listed
+values start ticked.</p>
+<p>For data with many columns, <code>unused_layout = "auto"</code> (the
+default) lists unused variables in a column on the left instead of a
+long row above the table. Use <code>"left"</code> or <code>"top"</code>
+to choose.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/safePivot.html">safePivot</a></span><span class="op">(</span><span class="va">mtcars</span>, rows <span class="op">=</span> <span class="st">"cyl"</span>, cols <span class="op">=</span> <span class="st">"gear"</span>, unused_layout <span class="op">=</span> <span class="st">"left"</span><span class="op">)</span></span></code></pre></div>
+<div class="float">
+<img src="figures/wide-layout.png" style="max-width:100%" width="914" alt="Unused mtcars variables listed in a column on the left of the table"><div class="figcaption">Unused mtcars variables listed in a column on
+the left of the table</div>
+</div>
+</div>
+<div class="section level2">
 <h2 id="export">Export<a class="anchor" aria-label="anchor" href="#export"></a>
 </h2>
 <p>SafePivot can export computed pivot results.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/safe_pivot_compute.html">safe_pivot_compute</a></span><span class="op">(</span></span>
 <span>  <span class="va">iris</span>,</span>
 <span>  rows <span class="op">=</span> <span class="st">"Species"</span>,</span>
@@ -313,7 +381,7 @@ requires a larger Plotly bundle and custom hierarchy handling.</p>
 <h2 id="development-checks">Development checks<a class="anchor" aria-label="anchor" href="#development-checks"></a>
 </h2>
 <p>Before releasing updates, run:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">document</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">load_all</span><span class="op">(</span>reset <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">test</span><span class="op">(</span><span class="op">)</span></span>
@@ -330,7 +398,7 @@ requires a larger Plotly bundle and custom hierarchy handling.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

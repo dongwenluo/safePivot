@@ -1,6 +1,9 @@
 # Compute pivot result from a Shiny safePivot config
 
-Compute pivot result from a Shiny safePivot config
+Rows, columns, values, aggregator, and filters are read from `config`
+exactly as the browser sent them. The `default_*` arguments are only
+used when `config` is `NULL` (before the widget has reported its state),
+so clearing a field in the browser gives an empty field here too.
 
 ## Usage
 
@@ -12,6 +15,8 @@ safe_pivot_compute_from_config(
   default_cols = NULL,
   default_vals = NULL,
   default_aggregator = "Median",
+  default_inclusions = NULL,
+  default_exclusions = NULL,
   missing_label = "(Missing)",
   show_missing_category = TRUE
 )
@@ -41,7 +46,14 @@ safe_pivot_compute_from_config(
 
 - default_aggregator:
 
-  Default aggregator used when `config` is `NULL`.
+  Default aggregator used when `config` is `NULL`, or when `config` has
+  no aggregator.
+
+- default_inclusions, default_exclusions:
+
+  Default filters used when `config` is `NULL`. Use the same values
+  passed to
+  [`safePivot()`](https://dongwenluo.github.io/safePivot/reference/safePivot.md).
 
 - missing_label:
 
@@ -53,7 +65,17 @@ safe_pivot_compute_from_config(
 
 ## Value
 
-A list with `long`, `wide`, and `config`.
+A list with `long`, `wide`, and `config`. `config` also holds the
+`inclusions` and `exclusions` that were applied.
+
+## Details
+
+Filters follow PivotTable.js: `exclusions` and `inclusions` are named
+lists of values per variable. A row is dropped when its value is listed
+in `exclusions`, or when its variable has `inclusions` and the value is
+not listed there. Variables not present in `data` are ignored. Missing
+values match `missing_label` for categorical variables and `"null"`
+otherwise.
 
 ## Examples
 
@@ -64,5 +86,15 @@ res <- safe_pivot_compute_from_config(
   default_rows = "Species",
   default_vals = "Sepal.Length",
   default_aggregator = "Median"
+)
+
+res <- safe_pivot_compute_from_config(
+  iris,
+  config = list(
+    rows = list("Species"),
+    vals = list("Sepal.Length"),
+    aggregatorName = "Mean",
+    exclusions = list(Species = list("setosa"))
+  )
 )
 ```

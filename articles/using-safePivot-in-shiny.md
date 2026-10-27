@@ -129,9 +129,19 @@ safePivotOutput("pivot")
 ```
 
 [`safe_pivot_compute_from_config()`](https://dongwenluo.github.io/safePivot/reference/safe_pivot_compute_from_config.md)
-also accepts default rows, columns, values, and aggregator settings.
-These defaults are important because `input$pivot_config` may be `NULL`
-before the widget sends its first configuration back to Shiny.
+also accepts default rows, columns, values, aggregator, and filter
+settings. These defaults are important because `input$pivot_config` may
+be `NULL` before the widget sends its first configuration back to Shiny.
+
+The defaults are used **only** while the config is `NULL`. Once the
+widget has reported its state, the config is used exactly as sent: if
+the user removes every row variable, the export has no row variables
+too.
+
+Filters chosen in the browser (unticked values in a variable’s filter
+box) are applied as well, so the export always matches the table on
+screen. The filters that were applied are returned in
+`res$config$inclusions` and `res$config$exclusions`.
 
 The following app exports the current pivot result to CSV, Excel, RDS,
 and RData.
@@ -252,6 +262,49 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 ```
 
+![Shiny export app: pivot table with Download CSV, Excel, RDS and RData
+buttons below](figures/shiny-export-app.png)
+
+Shiny export app: pivot table with Download CSV, Excel, RDS and RData
+buttons below
+
+## Starting filters
+
+To open the widget with some values already filtered out, pass
+`exclusions` (or `inclusions`) to
+[`safePivot()`](https://dongwenluo.github.io/safePivot/reference/safePivot.md),
+and the same list as `default_exclusions` to
+[`safe_pivot_compute_from_config()`](https://dongwenluo.github.io/safePivot/reference/safe_pivot_compute_from_config.md):
+
+``` r
+
+output$pivot <- renderSafePivot({
+  safePivot(
+    iris,
+    rows = "Species",
+    vals = "Sepal.Length",
+    aggregator = "Mean",
+    exclusions = list(Species = "setosa")
+  )
+})
+
+current_pivot <- reactive({
+  safe_pivot_compute_from_config(
+    data = iris,
+    config = input$pivot_config,
+    default_rows = "Species",
+    default_vals = "Sepal.Length",
+    default_aggregator = "Mean",
+    default_exclusions = list(Species = "setosa")
+  )
+})
+```
+
+Filter values are matched as the browser shows them. Missing values are
+the `missing_label` (default `"(Missing)"`) for text and factor columns,
+and `"null"` for numeric columns; logical values are `"true"` /
+`"false"`.
+
 ## Why use config-based export?
 
 A browser pivot table is interactive. Users can move variables between
@@ -269,8 +322,10 @@ This gives three advantages:
 ## Export consistency
 
 The interactive browser table and the R-side export engine use the same
-aggregator names. This means a user can change the pivot table in the
-browser and then export the current result through
+aggregator list: the browser builds its aggregators from the table
+defined in R, so the two cannot drift apart. This means a user can
+change the pivot table in the browser and then export the current result
+through
 [`safe_pivot_compute_from_config()`](https://dongwenluo.github.io/safePivot/reference/safe_pivot_compute_from_config.md).
 
 `safePivot` distinguishes:
@@ -387,13 +442,18 @@ badge_dat <- data.frame(
 
 safePivot(
   badge_dat,
-  rows = "ordered_group",
-  cols = "flag",
   vals = "score",
   aggregator = "Mean",
-  show_type_badges = TRUE
+  show_type_badges = TRUE,
+  unused_layout = "top"
 )
 ```
+
+![Variable pills with type badges: int, num, fct, ord, chr, lgl, date
+and time](figures/badges.png)
+
+Variable pills with type badges: int, num, fct, ord, chr, lgl, date and
+time
 
 The badges help users choose suitable variables for rows, columns, and
 values. For ordered factors, always set levels explicitly if the order

@@ -11,7 +11,7 @@ ordering, heatmap renderers, conditional formatting, and Shiny support."><meta p
 
     <a class="navbar-brand me-2" href="../index.html">safePivot</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -69,10 +69,10 @@ ordering, heatmap renderers, conditional formatting, and Shiny support.</p>
 <span>  conditional_format_mode <span class="op">=</span> <span class="st">"both"</span>,</span>
 <span>  high_threshold <span class="op">=</span> <span class="fl">0.85</span>,</span>
 <span>  low_threshold <span class="op">=</span> <span class="fl">0.15</span>,</span>
-<span>  ui_font_size <span class="op">=</span> <span class="fl">16</span>,</span>
-<span>  pill_font_size <span class="op">=</span> <span class="fl">17</span>,</span>
-<span>  table_font_size <span class="op">=</span> <span class="fl">18</span>,</span>
-<span>  badge_font_size <span class="op">=</span> <span class="fl">12</span>,</span>
+<span>  ui_font_size <span class="op">=</span> <span class="fl">14</span>,</span>
+<span>  pill_font_size <span class="op">=</span> <span class="fl">14</span>,</span>
+<span>  table_font_size <span class="op">=</span> <span class="fl">15</span>,</span>
+<span>  badge_font_size <span class="op">=</span> <span class="fl">11</span>,</span>
 <span>  plot_default_height <span class="op">=</span> <span class="fl">620</span>,</span>
 <span>  plot_min_height <span class="op">=</span> <span class="fl">520</span>,</span>
 <span>  plot_max_width <span class="op">=</span> <span class="fl">1150</span>,</span>
@@ -84,6 +84,9 @@ ordering, heatmap renderers, conditional formatting, and Shiny support.</p>
 <span>  plotly_layout <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  plotly_config <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  max_rows <span class="op">=</span> <span class="fl">1e+05</span>,</span>
+<span>  unused_layout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"left"</span>, <span class="st">"top"</span><span class="op">)</span>,</span>
+<span>  inclusions <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  exclusions <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  width <span class="op">=</span> <span class="st">"100%"</span>,</span>
 <span>  height <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -221,6 +224,26 @@ the default chart config.</p></dd>
 <dd><p>Maximum number of rows allowed for browser-side pivoting.</p></dd>
 
 
+<dt id="arg-unused-layout">unused_layout<a class="anchor" aria-label="anchor" href="#arg-unused-layout"></a></dt>
+<dd><p>Where variables not yet used are listed: <code>"top"</code> (a
+row above the table), <code>"left"</code> (a column beside the table), or <code>"auto"</code>
+(the default), which uses the left column when the variable pills would
+not fit in one row of roughly 800px. Use <code>"left"</code> for wide data so the
+page does not become very wide.</p></dd>
+
+
+<dt id="arg-inclusions-exclusions">inclusions, exclusions<a class="anchor" aria-label="anchor" href="#arg-inclusions-exclusions"></a></dt>
+<dd><p>Optional starting filters, as named lists of
+values per variable (the same format PivotTable.js uses), for example
+<code>exclusions = list(Species = "setosa")</code>. A value in <code>exclusions</code> starts
+unticked in that variable's filter box; when a variable has <code>inclusions</code>,
+only those values start ticked. Missing values are written as
+<code>missing_label</code> for categorical variables and <code>"null"</code> otherwise. Pass the
+same lists as <code>default_inclusions</code> / <code>default_exclusions</code> to
+<code><a href="safe_pivot_compute_from_config.html">safe_pivot_compute_from_config()</a></code> so R matches the browser before the
+widget reports its state.</p></dd>
+
+
 <dt id="arg-width">width<a class="anchor" aria-label="anchor" href="#arg-width"></a></dt>
 <dd><p>Widget width.</p></dd>
 
@@ -257,7 +280,7 @@ the default chart config.</p></dd>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

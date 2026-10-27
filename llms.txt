@@ -51,6 +51,9 @@ library(safePivot)
 - R factor-level ordering.
 - Data-type badges for draggable variables.
 - Browser-side conditional formatting for table output.
+- Starting filters (`inclusions` / `exclusions`) that are also applied
+  on export.
+- Unused variables listed on the left for wide data (`unused_layout`).
 - Heatmap renderers with selectable palettes.
 - Lightweight Plotly chart renderers.
 
@@ -67,20 +70,29 @@ safePivot(
 )
 ```
 
+![safePivot table: Species in rows, median Sepal.Length per
+species](reference/figures/README-basic.png)
+
+Drag variables between the unused list, the rows area (left) and the
+columns area (top); pick the aggregator and value variable at top left.
+
 ## Heatmap renderer
 
 ``` r
 
 safePivot(
-  iris,
-  rows = "Species",
-  cols = "Petal.Width",
-  vals = "Sepal.Length",
-  aggregator = "Median",
+  mtcars,
+  rows = "cyl",
+  cols = "gear",
+  vals = "mpg",
+  aggregator = "Mean",
   renderer = "Heatmap",
   heatmap_palette = "green"
 )
 ```
+
+![Heatmap of mean mpg by cylinders and
+gears](reference/figures/README-heatmap.png)
 
 Available heatmap palettes are:
 
@@ -114,15 +126,18 @@ summaries:
 ``` r
 
 safePivot(
-  iris,
-  rows = "Species",
-  cols = "Petal.Width",
-  vals = "Sepal.Length",
+  mtcars,
+  rows = "cyl",
+  cols = "gear",
+  vals = "mpg",
   aggregator = "Mean",
   renderer = "Bar Chart",
-  plot_height = 620
+  plot_default_height = 520
 )
 ```
+
+![Bar chart of mean mpg by gears, one bar per cylinder
+count](reference/figures/README-chart.png)
 
 Supported chart renderers include:
 
@@ -163,15 +178,36 @@ or values before they start dragging.
 
 ``` r
 
+badge_dat <- data.frame(
+  id = 1:3,
+  score = c(1.2, 3.4, 5.6),
+  group = factor(c("A", "B", "A")),
+  ordered_group = factor(
+    c("low", "medium", "high"),
+    levels = c("low", "medium", "high"),
+    ordered = TRUE
+  ),
+  name = c("x", "y", "z"),
+  flag = c(TRUE, FALSE, TRUE),
+  harvest_date = as.Date(c("2026-01-01", "2026-01-02", "2026-01-03")),
+  timestamp = as.POSIXct(c(
+    "2026-01-01 08:00:00",
+    "2026-01-02 08:00:00",
+    "2026-01-03 08:00:00"
+  ))
+)
+
 safePivot(
-  iris,
-  rows = "Species",
-  vals = "Sepal.Length",
-  aggregator = "Median",
-  renderer = "Table",
-  show_type_badges = TRUE
+  badge_dat,
+  vals = "score",
+  aggregator = "Mean",
+  show_type_badges = TRUE,
+  unused_layout = "top"
 )
 ```
+
+![Variable pills with type badges: int, num, fct, ord, chr, lgl, date
+and time](reference/figures/README-badges.png)
 
 ## Factor order
 
@@ -195,6 +231,9 @@ safePivot(
   respect_factor_order = TRUE
 )
 ```
+
+![Species listed in factor-level order: virginica, versicolor,
+setosa](reference/figures/README-factor-order.png)
 
 For ordered factors, define levels explicitly instead of relying on
 alphabetical order:
@@ -393,6 +432,12 @@ safePivot(
 )
 ```
 
+![Conditional formatting: zero cell in yellow, highest value in orange,
+empty cells hatched](reference/figures/README-conditional-format.png)
+
+Zero cells are yellow, the highest values orange, the lowest blue, and
+cells with no records are hatched grey. Totals are never highlighted.
+
 For heatmap renderers, use `heatmap_palette` rather than
 `conditional_format_mode`. This keeps the heatmap colour scale clear and
 avoids overwriting heatmap colours.
@@ -517,8 +562,73 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 ```
 
+![Shiny app with a renderer selector and CSV / Excel download buttons
+beside the pivot table](reference/figures/README-shiny-export.png)
+
 `input$pivot_config` stores the current drag-and-drop state, including
 rows, columns, values, aggregator, renderer, inclusions, and exclusions.
+
+[`safe_pivot_compute_from_config()`](https://dongwenluo.github.io/safePivot/reference/safe_pivot_compute_from_config.md)
+applies the browser’s filters, so the export matches the table on
+screen. The `default_*` arguments are only used while
+`input$pivot_config` is still `NULL`; a field the user has cleared stays
+empty.
+
+## Starting filters
+
+Start the widget with some values filtered out. Pass the same lists to
+[`safe_pivot_compute_from_config()`](https://dongwenluo.github.io/safePivot/reference/safe_pivot_compute_from_config.md)
+as `default_inclusions` / `default_exclusions` so the export matches
+before the widget reports back.
+
+``` r
+
+safePivot(
+  iris,
+  rows = "Species",
+  vals = "Sepal.Length",
+  aggregator = "Mean",
+  exclusions = list(Species = "setosa")
+)
+
+safe_pivot_compute_from_config(
+  iris,
+  config = NULL,
+  default_rows = "Species",
+  default_vals = "Sepal.Length",
+  default_aggregator = "Mean",
+  default_exclusions = list(Species = "setosa")
+)
+```
+
+![Filter box for Species with setosa unticked; the table shows only
+versicolor and virginica](reference/figures/README-filters.png)
+
+A filtered variable is shown in blue italics. Click its ▾ to open the
+filter box.
+
+Missing values are written as the `missing_label` (default
+`"(Missing)"`) for text and factor columns, and as `"null"` for numeric
+columns.
+
+## Layout for wide data
+
+With many variables, a row of variable pills above the table makes the
+whole widget very wide. `unused_layout = "auto"` (the default) moves the
+unused variables to a column on the left when they would not fit in one
+row; use `"left"` or `"top"` to choose yourself.
+
+``` r
+
+safePivot(mtcars, rows = "cyl", cols = "gear", unused_layout = "left")
+```
+
+![Unused mtcars variables listed in a column on the left of the
+table](reference/figures/README-wide-layout.png)
+
+Font sizes default to 14px for the controls and pills and 15px for the
+table. Change them with `ui_font_size`, `pill_font_size`,
+`table_font_size`, and `badge_font_size`.
 
 ## Aggregator summary
 
