@@ -228,6 +228,31 @@ safePivot(
 )
 ```
 
+# Starting filters and layout
+
+Start with some values filtered out, the same way a user would untick them in a
+variable's filter box:
+
+```{r eval=FALSE}
+safePivot(
+  iris,
+  rows = "Species",
+  vals = "Sepal.Length",
+  aggregator = "Mean",
+  exclusions = list(Species = "setosa")
+)
+```
+
+`inclusions` works the other way round: only the listed values start ticked.
+
+For data with many columns, `unused_layout = "auto"` (the default) lists unused
+variables in a column on the left instead of a long row above the table. Use
+`"left"` or `"top"` to choose.
+
+```{r eval=FALSE}
+safePivot(mtcars, rows = "cyl", cols = "gear", unused_layout = "left")
+```
+
 # Export
 
 SafePivot can export computed pivot results.

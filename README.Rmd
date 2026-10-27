@@ -58,6 +58,8 @@ library(safePivot)
 - R factor-level ordering.
 - Data-type badges for draggable variables.
 - Browser-side conditional formatting for table output.
+- Starting filters (`inclusions` / `exclusions`) that are also applied on export.
+- Unused variables listed on the left for wide data (`unused_layout`).
 - Heatmap renderers with selectable palettes.
 - Lightweight Plotly chart renderers.
 
@@ -499,6 +501,53 @@ shinyApp(ui, server)
 
 `input$pivot_config` stores the current drag-and-drop state, including rows,
 columns, values, aggregator, renderer, inclusions, and exclusions.
+
+`safe_pivot_compute_from_config()` applies the browser's filters, so the export
+matches the table on screen. The `default_*` arguments are only used while
+`input$pivot_config` is still `NULL`; a field the user has cleared stays empty.
+
+## Starting filters
+
+Start the widget with some values filtered out. Pass the same lists to
+`safe_pivot_compute_from_config()` as `default_inclusions` /
+`default_exclusions` so the export matches before the widget reports back.
+
+```{r eval=FALSE}
+safePivot(
+  iris,
+  rows = "Species",
+  vals = "Sepal.Length",
+  aggregator = "Mean",
+  exclusions = list(Species = "setosa")
+)
+
+safe_pivot_compute_from_config(
+  iris,
+  config = NULL,
+  default_rows = "Species",
+  default_vals = "Sepal.Length",
+  default_aggregator = "Mean",
+  default_exclusions = list(Species = "setosa")
+)
+```
+
+Missing values are written as the `missing_label` (default `"(Missing)"`) for
+text and factor columns, and as `"null"` for numeric columns.
+
+## Layout for wide data
+
+With many variables, a row of variable pills above the table makes the whole
+widget very wide. `unused_layout = "auto"` (the default) moves the unused
+variables to a column on the left when they would not fit in one row; use
+`"left"` or `"top"` to choose yourself.
+
+```{r eval=FALSE}
+safePivot(mtcars, rows = "cyl", cols = "gear", unused_layout = "left")
+```
+
+Font sizes default to 14px for the controls and pills and 15px for the table.
+Change them with `ui_font_size`, `pill_font_size`, `table_font_size`, and
+`badge_font_size`.
 
 ## Aggregator summary
 

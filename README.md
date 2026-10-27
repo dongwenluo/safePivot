@@ -50,6 +50,9 @@ library(safePivot)
 - R factor-level ordering.
 - Data-type badges for draggable variables.
 - Browser-side conditional formatting for table output.
+- Starting filters (`inclusions` / `exclusions`) that are also applied
+  on export.
+- Unused variables listed on the left for wide data (`unused_layout`).
 - Heatmap renderers with selectable palettes.
 - Lightweight Plotly chart renderers.
 
@@ -206,11 +209,11 @@ ordered_dat <- data.frame(
 `safePivot` uses explicit aggregation rules so that empty pivot cells,
 observed missing values, and observed zero values are not confused.
 
-| Case | Meaning | Example | safePivot behaviour |
-|----|----|----|----|
-| Empty pivot cell | No records exist for this row-column combination | Row `C`, column `Y` has no rows in the data | Returned as `NA` after widening; not counted as missing |
-| Observed missing value | A record exists, but the selected value is `NA` | `y = NA` | Counted by `N missing` |
-| Observed zero value | A record exists and the selected numeric value is `0` | `y = 0` | Counted by `N zero` |
+| Case                   | Meaning                                               | Example                                     | safePivot behaviour                                     |
+|------------------------|-------------------------------------------------------|---------------------------------------------|---------------------------------------------------------|
+| Empty pivot cell       | No records exist for this row-column combination      | Row `C`, column `Y` has no rows in the data | Returned as `NA` after widening; not counted as missing |
+| Observed missing value | A record exists, but the selected value is `NA`       | `y = NA`                                    | Counted by `N missing`                                  |
+| Observed zero value    | A record exists and the selected numeric value is `0` | `y = 0`                                     | Counted by `N zero`                                     |
 
 This distinction is important because a no-data cell is not a missing
 measurement, and a missing measurement is not a zero.
@@ -234,26 +237,26 @@ In this data:
 
 ### Count-style aggregators
 
-| Aggregator | Definition |
-|----|----|
-| `Count` | Number of observed records in the pivot cell |
-| `N missing` | Number of observed records where the selected value is `NA` |
-| `N non-missing` | Number of observed records where the selected value is not `NA` |
-| `N zero` | Number of finite numeric non-missing values equal to `0` |
-| `N non-zero` | Number of finite numeric non-missing values not equal to `0` |
-| `Count unique` | Number of unique non-missing, non-blank values |
-| `List unique values` | Sorted list of unique non-missing, non-blank values |
+| Aggregator           | Definition                                                      |
+|----------------------|-----------------------------------------------------------------|
+| `Count`              | Number of observed records in the pivot cell                    |
+| `N missing`          | Number of observed records where the selected value is `NA`     |
+| `N non-missing`      | Number of observed records where the selected value is not `NA` |
+| `N zero`             | Number of finite numeric non-missing values equal to `0`        |
+| `N non-zero`         | Number of finite numeric non-missing values not equal to `0`    |
+| `Count unique`       | Number of unique non-missing, non-blank values                  |
+| `List unique values` | Sorted list of unique non-missing, non-blank values             |
 
 ### Within-cell percentages
 
 Within-cell percentages use only records inside the current pivot cell.
 
-| Aggregator | Numerator | Denominator |
-|----|----|----|
-| `Missing % within Cell` | Cell `N missing` | Cell `Count` |
-| `Non-missing % within Cell` | Cell `N non-missing` | Cell `Count` |
-| `Zero % within Cell` | Cell `N zero` | Cell numeric non-missing count |
-| `Non-zero % within Cell` | Cell `N non-zero` | Cell numeric non-missing count |
+| Aggregator                  | Numerator            | Denominator                    |
+|-----------------------------|----------------------|--------------------------------|
+| `Missing % within Cell`     | Cell `N missing`     | Cell `Count`                   |
+| `Non-missing % within Cell` | Cell `N non-missing` | Cell `Count`                   |
+| `Zero % within Cell`        | Cell `N zero`        | Cell numeric non-missing count |
+| `Non-zero % within Cell`    | Cell `N non-zero`    | Cell numeric non-missing count |
 
 For a cell with values:
 
@@ -281,33 +284,33 @@ treated as zero.
 Row, column, and total percentages express the current cell as a
 percentage of a larger denominator.
 
-| Aggregator | Numerator | Denominator |
-|----|----|----|
-| `Missing % of Row` | Cell `N missing` | Row `Count` |
-| `Missing % of Column` | Cell `N missing` | Column `Count` |
-| `Missing % of Total` | Cell `N missing` | Total `Count` |
-| `Non-missing % of Row` | Cell `N non-missing` | Row `Count` |
-| `Non-missing % of Column` | Cell `N non-missing` | Column `Count` |
-| `Non-missing % of Total` | Cell `N non-missing` | Total `Count` |
-| `Zero % of Row` | Cell `N zero` | Row numeric non-missing count |
-| `Zero % of Column` | Cell `N zero` | Column numeric non-missing count |
-| `Zero % of Total` | Cell `N zero` | Total numeric non-missing count |
-| `Non-zero % of Row` | Cell `N non-zero` | Row numeric non-missing count |
-| `Non-zero % of Column` | Cell `N non-zero` | Column numeric non-missing count |
-| `Non-zero % of Total` | Cell `N non-zero` | Total numeric non-missing count |
+| Aggregator                | Numerator            | Denominator                      |
+|---------------------------|----------------------|----------------------------------|
+| `Missing % of Row`        | Cell `N missing`     | Row `Count`                      |
+| `Missing % of Column`     | Cell `N missing`     | Column `Count`                   |
+| `Missing % of Total`      | Cell `N missing`     | Total `Count`                    |
+| `Non-missing % of Row`    | Cell `N non-missing` | Row `Count`                      |
+| `Non-missing % of Column` | Cell `N non-missing` | Column `Count`                   |
+| `Non-missing % of Total`  | Cell `N non-missing` | Total `Count`                    |
+| `Zero % of Row`           | Cell `N zero`        | Row numeric non-missing count    |
+| `Zero % of Column`        | Cell `N zero`        | Column numeric non-missing count |
+| `Zero % of Total`         | Cell `N zero`        | Total numeric non-missing count  |
+| `Non-zero % of Row`       | Cell `N non-zero`    | Row numeric non-missing count    |
+| `Non-zero % of Column`    | Cell `N non-zero`    | Column numeric non-missing count |
+| `Non-zero % of Total`     | Cell `N non-zero`    | Total numeric non-missing count  |
 
 ### Sum and count fractions
 
 Fraction aggregators are different from missing/zero percentage
 aggregators. They use numeric sums or record counts as denominators.
 
-| Aggregator | Meaning |
-|----|----|
-| `Sum as Fraction of Total` | Cell numeric sum divided by total numeric sum |
-| `Sum as Fraction of Rows` | Cell numeric sum divided by row numeric sum |
-| `Sum as Fraction of Columns` | Cell numeric sum divided by column numeric sum |
-| `Count as Fraction of Total` | Cell record count divided by total record count |
-| `Count as Fraction of Rows` | Cell record count divided by row record count |
+| Aggregator                     | Meaning                                          |
+|--------------------------------|--------------------------------------------------|
+| `Sum as Fraction of Total`     | Cell numeric sum divided by total numeric sum    |
+| `Sum as Fraction of Rows`      | Cell numeric sum divided by row numeric sum      |
+| `Sum as Fraction of Columns`   | Cell numeric sum divided by column numeric sum   |
+| `Count as Fraction of Total`   | Cell record count divided by total record count  |
+| `Count as Fraction of Rows`    | Cell record count divided by row record count    |
 | `Count as Fraction of Columns` | Cell record count divided by column record count |
 
 For example:
@@ -501,16 +504,66 @@ shinyApp(ui, server)
 `input$pivot_config` stores the current drag-and-drop state, including
 rows, columns, values, aggregator, renderer, inclusions, and exclusions.
 
+`safe_pivot_compute_from_config()` applies the browser’s filters, so the
+export matches the table on screen. The `default_*` arguments are only
+used while `input$pivot_config` is still `NULL`; a field the user has
+cleared stays empty.
+
+## Starting filters
+
+Start the widget with some values filtered out. Pass the same lists to
+`safe_pivot_compute_from_config()` as `default_inclusions` /
+`default_exclusions` so the export matches before the widget reports
+back.
+
+``` r
+safePivot(
+  iris,
+  rows = "Species",
+  vals = "Sepal.Length",
+  aggregator = "Mean",
+  exclusions = list(Species = "setosa")
+)
+
+safe_pivot_compute_from_config(
+  iris,
+  config = NULL,
+  default_rows = "Species",
+  default_vals = "Sepal.Length",
+  default_aggregator = "Mean",
+  default_exclusions = list(Species = "setosa")
+)
+```
+
+Missing values are written as the `missing_label` (default
+`"(Missing)"`) for text and factor columns, and as `"null"` for numeric
+columns.
+
+## Layout for wide data
+
+With many variables, a row of variable pills above the table makes the
+whole widget very wide. `unused_layout = "auto"` (the default) moves the
+unused variables to a column on the left when they would not fit in one
+row; use `"left"` or `"top"` to choose yourself.
+
+``` r
+safePivot(mtcars, rows = "cyl", cols = "gear", unused_layout = "left")
+```
+
+Font sizes default to 14px for the controls and pills and 15px for the
+table. Change them with `ui_font_size`, `pill_font_size`,
+`table_font_size`, and `badge_font_size`.
+
 ## Aggregator summary
 
-| Type | Examples |
-|----|----|
-| Count | `Count`, `Count unique`, `List unique values` |
-| Missingness | `N missing`, `N non-missing`, `Missing % within Cell`, `Missing % of Total` |
-| Zero checks | `N zero`, `N non-zero`, `Zero % within Cell`, `Zero % of Row` |
-| Numeric summary | `Sum`, `Mean`, `Median`, `Min`, `Max`, `Range` |
-| Distribution | `Q1`, `Q3`, `IQR`, `Variance`, `SD`, `SE`, `CV %` |
-| Fraction | `Sum as Fraction of Total`, `Count as Fraction of Rows` |
+| Type            | Examples                                                                    |
+|-----------------|-----------------------------------------------------------------------------|
+| Count           | `Count`, `Count unique`, `List unique values`                               |
+| Missingness     | `N missing`, `N non-missing`, `Missing % within Cell`, `Missing % of Total` |
+| Zero checks     | `N zero`, `N non-zero`, `Zero % within Cell`, `Zero % of Row`               |
+| Numeric summary | `Sum`, `Mean`, `Median`, `Min`, `Max`, `Range`                              |
+| Distribution    | `Q1`, `Q3`, `IQR`, `Variance`, `SD`, `SE`, `CV %`                           |
+| Fraction        | `Sum as Fraction of Total`, `Count as Fraction of Rows`                     |
 
 ## Notes for larger data
 

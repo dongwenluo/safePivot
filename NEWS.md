@@ -1,4 +1,4 @@
-# safePivot (development version)
+# safePivot 0.2.0
 
 * `safe_pivot_compute_from_config()` now applies the filters chosen in the
   browser (`inclusions` / `exclusions` in the Shiny config), so exported and

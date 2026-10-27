@@ -135,8 +135,18 @@ safePivotOutput("pivot")
 ```
 
 `safe_pivot_compute_from_config()` also accepts default rows, columns, values,
-and aggregator settings. These defaults are important because `input$pivot_config`
-may be `NULL` before the widget sends its first configuration back to Shiny.
+aggregator, and filter settings. These defaults are important because
+`input$pivot_config` may be `NULL` before the widget sends its first
+configuration back to Shiny.
+
+The defaults are used **only** while the config is `NULL`. Once the widget has
+reported its state, the config is used exactly as sent: if the user removes
+every row variable, the export has no row variables too.
+
+Filters chosen in the browser (unticked values in a variable's filter box) are
+applied as well, so the export always matches the table on screen. The filters
+that were applied are returned in `res$config$inclusions` and
+`res$config$exclusions`.
 
 The following app exports the current pivot result to CSV, Excel, RDS, and RData.
 
@@ -255,6 +265,39 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 ```
 
+# Starting filters
+
+To open the widget with some values already filtered out, pass `exclusions`
+(or `inclusions`) to `safePivot()`, and the same list as `default_exclusions`
+to `safe_pivot_compute_from_config()`:
+
+```r
+output$pivot <- renderSafePivot({
+  safePivot(
+    iris,
+    rows = "Species",
+    vals = "Sepal.Length",
+    aggregator = "Mean",
+    exclusions = list(Species = "setosa")
+  )
+})
+
+current_pivot <- reactive({
+  safe_pivot_compute_from_config(
+    data = iris,
+    config = input$pivot_config,
+    default_rows = "Species",
+    default_vals = "Sepal.Length",
+    default_aggregator = "Mean",
+    default_exclusions = list(Species = "setosa")
+  )
+})
+```
+
+Filter values are matched as the browser shows them. Missing values are the
+`missing_label` (default `"(Missing)"`) for text and factor columns, and
+`"null"` for numeric columns; logical values are `"true"` / `"false"`.
+
 # Why use config-based export?
 
 A browser pivot table is interactive. Users can move variables between rows,
@@ -272,7 +315,8 @@ This gives three advantages:
 # Export consistency
 
 The interactive browser table and the R-side export engine use the same
-aggregator names. This means a user can change the pivot table in the browser and
+aggregator list: the browser builds its aggregators from the table defined in
+R, so the two cannot drift apart. This means a user can change the pivot table in the browser and
 then export the current result through `safe_pivot_compute_from_config()`.
 
 `safePivot` distinguishes:
