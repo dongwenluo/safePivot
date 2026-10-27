@@ -824,10 +824,14 @@ HTMLWidgets.widget({
             var explicitWidth = Number(x.plot_width);
             var explicitHeight = Number(x.plot_height);
 
-            // The renderer cell grows to fit the chart, so measure the widget
-            // and subtract the rows column next to it.
-            var rowsWidth = $el.find("td.pvtRows").first().outerWidth() || 0;
-            var availableWidth = ($el.innerWidth() || width || 900) - rowsWidth - 32;
+            // The renderer cell grows to fit the chart, so measure from its left
+            // edge to the widget's right edge. This also covers the unused
+            // variables column when it sits on the left.
+            var rendererTd = $el.find("td.pvtRendererArea").get(0);
+            var offsetLeft = rendererTd
+                ? rendererTd.getBoundingClientRect().left - el.getBoundingClientRect().left
+                : 0;
+            var availableWidth = (el.clientWidth || width || 900) - offsetLeft - 24;
 
             /*
             Important:

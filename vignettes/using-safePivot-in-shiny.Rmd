@@ -265,6 +265,8 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 ```
 
+![Shiny export app: pivot table with Download CSV, Excel, RDS and RData buttons below](figures/shiny-export-app.png){width=1200px style="max-width:100%"}
+
 # Starting filters
 
 To open the widget with some values already filtered out, pass `exclusions`
@@ -429,13 +431,14 @@ badge_dat <- data.frame(
 
 safePivot(
   badge_dat,
-  rows = "ordered_group",
-  cols = "flag",
   vals = "score",
   aggregator = "Mean",
-  show_type_badges = TRUE
+  show_type_badges = TRUE,
+  unused_layout = "top"
 )
 ```
+
+![Variable pills with type badges: int, num, fct, ord, chr, lgl, date and time](figures/badges.png){width=877px style="max-width:100%"}
 
 The badges help users choose suitable variables for rows, columns, and values.
 For ordered factors, always set levels explicitly if the order matters.

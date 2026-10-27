@@ -34,6 +34,22 @@
 * Default font sizes are smaller: `ui_font_size = 14`, `pill_font_size = 14`,
   `table_font_size = 15`, `badge_font_size = 11` (were 16, 17, 18, 12).
 
+## Documentation
+
+* README (pkgdown home page) and both articles now include screenshots of
+  the widget: table, heatmap, bar chart, type badges, factor order,
+  conditional formatting, filters, the wide-data layout, and the Shiny
+  export apps. The heatmap and chart examples now use `mtcars` (cyl x gear)
+  so the pictures stay readable, and the chart example uses the correct
+  argument `plot_default_height` (it used `plot_height`, which does not
+  exist).
+
+* `tools/doc-figures/` regenerates the screenshots from the documented code
+  (R + Node/Playwright); see the header of `figures.R`.
+
+* The aggregator and both sort-order buttons stay on one line in narrow
+  layouts.
+
 ## Internals
 
 * One aggregator table (`R/aggregators.R`) now drives both the R
@@ -57,7 +73,8 @@
 * Type badges are computed from the original data, so Date and date-time
   columns show `date` / `time` instead of `chr`.
 
-* Charts are sized to the space beside the rows panel, so the legend is no
+* Charts are sized to the space right of the rows panel (and of the unused
+  variables column, when it is on the left), so the legend is no
   longer clipped, and resizing keeps the chart options passed from R
   (`plot_default_height`, font sizes, `plotly_layout`, ...).
 

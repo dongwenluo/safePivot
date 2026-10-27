@@ -93,7 +93,7 @@
   border: 1px solid var(--safePivot-border);
   border-radius: var(--safePivot-radius);
   text-align: left;
-  white-space: normal;
+  white-space: nowrap; /* keep the aggregator and both sort buttons on one line */
 }
 
 .safePivot-wrapper table.pvtUi td.pvtVals select.pvtAttrDropdown {
