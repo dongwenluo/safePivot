@@ -1,517 +1,617 @@
 /* ============================================================
    safePivot.css
-   Clean styling for safePivot htmlwidget / PivotTable.js
+   Styling for the safePivot htmlwidget (on top of pivot.min.css).
+
+   Every rule is scoped to .safePivot-wrapper so nothing leaks into
+   the host page. Colours and sizes are tokens on the wrapper; the
+   font sizes are set from R (safePivot(ui_font_size = ...)).
    ============================================================ */
 
 
-/* ============================================================
-   1. Main wrapper and size variables
-   ============================================================ */
+/* ------------------------------------------------------------
+   1. Tokens and wrapper
+   ------------------------------------------------------------ */
 
 .safePivot-wrapper {
-  width: 100%;
-  height: 100%;
-  overflow-x: auto;
-
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #111827;
-
-  --safePivot-ui-font-size: 16px;
-  --safePivot-pill-font-size: 16px;
-  --safePivot-table-font-size: 16px;
+  --safePivot-ui-font-size: 14px;
+  --safePivot-pill-font-size: 14px;
+  --safePivot-table-font-size: 15px;
   --safePivot-badge-font-size: 11px;
 
-  --safePivot-navy: rgba(37, 99, 235, 0.16);
-  --safePivot-zone-border: rgba(37, 99, 235, 0.75);
-  --safePivot-border: #d1d5db;
-  --safePivot-header-bg: #e8f0f0;
-  --safePivot-unused-bg: #f8fafc;
-}
+  --safePivot-text: #0f172a;
+  --safePivot-text-muted: #475569;
+  --safePivot-surface: #ffffff;
+  --safePivot-surface-alt: #f8fafc;
+  --safePivot-border: #d8dee8;
+  --safePivot-border-strong: #94a3b8;
 
-.html-widget,
-.safePivot-wrapper {
+  --safePivot-accent: #2563eb;
+  --safePivot-accent-soft: #eff6ff;
+  --safePivot-accent-border: #60a5fa;
+  --safePivot-focus: rgba(37, 99, 235, 0.35);
+
+  --safePivot-header-bg: #eef2f7;
+  --safePivot-total-bg: #f8fafc;
+  --safePivot-row-hover: #f1f5f9;
+
+  --safePivot-radius: 8px;
+  --safePivot-radius-sm: 6px;
+
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
   min-height: 100%;
+  overflow: auto;
+
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: var(--safePivot-ui-font-size);
+  color: var(--safePivot-text);
+  background: var(--safePivot-surface);
+}
+
+.safePivot-wrapper *,
+.safePivot-wrapper *::before,
+.safePivot-wrapper *::after {
+  box-sizing: border-box;
 }
 
 
-/* ============================================================
-   2. Pivot UI layout
-   ============================================================ */
+/* ------------------------------------------------------------
+   2. Pivot UI grid and drop zones
+   ------------------------------------------------------------ */
 
 .safePivot-wrapper table.pvtUi {
   border-collapse: separate;
-  border-spacing: 4px;
+  border-spacing: 8px;
   font-size: var(--safePivot-ui-font-size);
+  color: var(--safePivot-text);
 }
 
-.safePivot-wrapper table.pvtUi td {
+.safePivot-wrapper table.pvtUi > tbody > tr > td {
   vertical-align: top;
 }
 
-/* Active row / column / value drop zones */
-.safePivot-wrapper table.pvtUi td.pvtAxisContainer,
-.safePivot-wrapper table.pvtUi td.pvtAxisContainer.pvtRows,
-.safePivot-wrapper table.pvtUi td.pvtAxisContainer.pvtCols,
+/* Rows / columns drop zones */
+.safePivot-wrapper table.pvtUi td.pvtAxisContainer {
+  min-width: 140px;
+  padding: 6px;
+  background: var(--safePivot-accent-soft);
+  border: 1px dashed var(--safePivot-accent-border);
+  border-radius: var(--safePivot-radius);
+}
+
+/* Unused variables */
+.safePivot-wrapper table.pvtUi td.pvtAxisContainer.pvtUnused {
+  background: var(--safePivot-surface-alt);
+  border: 1px solid var(--safePivot-border);
+}
+
+/* Aggregator + value selectors */
 .safePivot-wrapper table.pvtUi td.pvtVals {
-  background-color: var(--safePivot-navy) !important;
-  border: 2px solid var(--safePivot-zone-border) !important;
-  padding: 10px !important;
-  vertical-align: top;
+  padding: 8px;
+  background: var(--safePivot-surface-alt);
+  border: 1px solid var(--safePivot-border);
+  border-radius: var(--safePivot-radius);
+  text-align: left;
+  white-space: nowrap; /* keep the aggregator and both sort buttons on one line */
 }
 
-/* Unused variable zone */
-.safePivot-wrapper table.pvtUi td.pvtAxisContainer.pvtUnused,
-.safePivot-wrapper table.pvtUi td.pvtUnused {
-  background-color: var(--safePivot-unused-bg) !important;
-  border: 1px solid var(--safePivot-border) !important;
-  padding: 8px !important;
-  vertical-align: top;
+.safePivot-wrapper table.pvtUi td.pvtVals select.pvtAttrDropdown {
+  display: block;
+  margin-top: 6px;
 }
 
-/* Renderer / aggregator control cells */
-.safePivot-wrapper table.pvtUi td.pvtUiCell {
-  vertical-align: top;
+/* Renderer selector cell */
+.safePivot-wrapper table.pvtUi td.pvtUiCell:first-child {
+  padding: 0;
+}
+
+/* Unused zone in the top row: wrap pills onto several lines */
+.safePivot-wrapper table.pvtUi td.pvtUnused.pvtHorizList {
+  white-space: normal;
+}
+
+/* Unused zone in the left column: one pill per line */
+.safePivot-wrapper table.pvtUi td.pvtUnused.pvtVertList {
+  overflow-y: auto;
+}
+
+.safePivot-wrapper table.pvtUi td.pvtUnused.pvtVertList > li {
+  display: block;
+}
+
+/* Drag placeholder */
+.safePivot-wrapper .pvtAxisContainer li.pvtPlaceholder {
+  display: inline-block;
+  min-width: 80px;
+  min-height: 30px;
+  margin: 3px;
+  padding: 0;
+  border: 2px dashed var(--safePivot-accent);
+  border-radius: 999px;
+  background: var(--safePivot-surface);
 }
 
 
-/* ============================================================
-   3. Dropdowns and selectors
-   ============================================================ */
+/* ------------------------------------------------------------
+   3. Selects, order buttons, inputs
+   ------------------------------------------------------------ */
 
-.safePivot-wrapper .pvtUi select,
-.safePivot-wrapper .pvtUi option,
-.safePivot-wrapper .pvtUi input,
-.safePivot-wrapper .pvtUi button {
+.safePivot-wrapper .pvtUi select {
+  height: 34px;
+  max-width: 100%;
+  padding: 0 28px 0 10px;
+
+  font: inherit;
   font-size: var(--safePivot-ui-font-size);
+  color: var(--safePivot-text);
+
+  background-color: var(--safePivot-surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  border: 1px solid var(--safePivot-border-strong);
+  border-radius: var(--safePivot-radius-sm);
+
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
 }
 
-.safePivot-wrapper select.pvtRenderer,
-.safePivot-wrapper select.pvtAggregator,
-.safePivot-wrapper select.pvtAttrDropdown {
-  min-height: 34px;
-  border: 1px solid #9ca3af !important;
-  border-radius: 4px !important;
-  padding: 4px 8px !important;
-  background: #ffffff !important;
-  color: #111827 !important;
-  font-size: var(--safePivot-ui-font-size) !important;
+.safePivot-wrapper .pvtUi select:hover {
+  border-color: var(--safePivot-text-muted);
 }
 
-.safePivot-wrapper select.pvtRenderer:focus,
-.safePivot-wrapper select.pvtAggregator:focus,
-.safePivot-wrapper select.pvtAttrDropdown:focus {
-  outline: 2px solid #93c5fd !important;
-  outline-offset: 1px;
+.safePivot-wrapper .pvtUi select:focus-visible,
+.safePivot-wrapper .pvtUi input:focus-visible,
+.safePivot-wrapper .pvtUi button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--safePivot-focus);
+  border-color: var(--safePivot-accent);
+}
+
+.safePivot-wrapper select.pvtRenderer {
+  width: 100%;
+  min-width: 180px;
+}
+
+/* Row / column sort-order toggles (↕ ↔) */
+.safePivot-wrapper .pvtRowOrder,
+.safePivot-wrapper .pvtColOrder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: 4px;
+
+  color: var(--safePivot-text-muted);
+  border: 1px solid var(--safePivot-border);
+  border-radius: var(--safePivot-radius-sm);
+  background: var(--safePivot-surface);
+  vertical-align: middle;
+}
+
+.safePivot-wrapper .pvtRowOrder:hover,
+.safePivot-wrapper .pvtColOrder:hover {
+  color: var(--safePivot-accent);
+  border-color: var(--safePivot-accent-border);
 }
 
 
-/* ============================================================
+/* ------------------------------------------------------------
    4. Variable pills
-   ============================================================ */
+   The <li> is only a slot; the <span class="pvtAttr"> is the pill.
+   ------------------------------------------------------------ */
 
-.safePivot-wrapper table.pvtUi td.pvtAxisContainer li,
-.safePivot-wrapper table.pvtUi td.pvtUnused li,
-.safePivot-wrapper .pvtAttr {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 4px !important;
-
-  margin: 4px !important;
-  padding: 5px 9px !important;
-
-  background: #f8fafc !important;
-  color: #111827 !important;
-  border: 1px solid var(--safePivot-border) !important;
-  border-radius: 6px !important;
-
-  font-size: var(--safePivot-pill-font-size) !important;
-  font-weight: 700 !important;
-  line-height: 1.25 !important;
-  white-space: nowrap;
-}
-
-.safePivot-wrapper table.pvtUi td.pvtAxisContainer li:hover,
-.safePivot-wrapper table.pvtUi td.pvtUnused li:hover,
-.safePivot-wrapper .pvtAttr:hover {
-  background: #e0e7ff !important;
-  border-color: var(--safePivot-navy) !important;
+.safePivot-wrapper .pvtAxisContainer li {
+  display: inline-block;
+  margin: 3px;
+  padding: 0;
+  list-style: none;
   cursor: grab;
 }
 
-/* Small dropdown arrow inside variable pills */
-.safePivot-wrapper table.pvtUi .pvtTriangle {
-  color: #64748b !important;
+.safePivot-wrapper .pvtAxisContainer li span.pvtAttr {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px 4px 12px;
+
+  font-size: var(--safePivot-pill-font-size);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--safePivot-text);
+  white-space: nowrap;
+
+  background: var(--safePivot-surface);
+  border: 1px solid var(--safePivot-border-strong);
+  border-radius: 999px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.safePivot-wrapper .pvtAxisContainer li span.pvtAttr:hover {
+  border-color: var(--safePivot-accent);
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.18);
+}
+
+/* Pills whose values are filtered */
+.safePivot-wrapper .pvtAxisContainer li.pvtFilteredAttribute span.pvtAttr {
+  font-style: italic;
+  color: var(--safePivot-accent);
+  border-color: var(--safePivot-accent);
+  background: var(--safePivot-accent-soft);
+}
+
+/* Filter-box trigger inside each pill */
+.safePivot-wrapper .pvtTriangle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: -2px;
+
+  font-size: 0.75em;
+  color: var(--safePivot-text-muted);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.safePivot-wrapper .pvtTriangle:hover {
+  color: var(--safePivot-accent);
+  background: var(--safePivot-accent-soft);
+}
+
+.safePivot-wrapper .ui-sortable-helper span.pvtAttr {
+  cursor: grabbing;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
 }
 
 
-/* ============================================================
+/* ------------------------------------------------------------
    5. Variable type badges
-   ============================================================ */
+   ------------------------------------------------------------ */
 
 .safePivot-wrapper .safePivot-type-badge {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-
-  margin-left: 6px;
-  padding: 1px 6px;
-
-  border-radius: 999px;
-  border: 1px solid transparent;
+  padding: 0 6px;
 
   font-size: var(--safePivot-badge-font-size);
-  font-weight: 800;
-  line-height: 1.35;
-  letter-spacing: 0.01em;
+  font-weight: 600;
+  font-style: normal;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
 
-  vertical-align: middle;
+  border-radius: 999px;
   user-select: none;
 }
 
-/* numeric / double */
-.safePivot-wrapper .safePivot-type-num {
-  background-color: #dbeafe;
-  color: #1e3a8a;
-  border-color: #bfdbfe;
+.safePivot-wrapper .safePivot-type-num  { background: #dbeafe; color: #1e3a8a; }
+.safePivot-wrapper .safePivot-type-int  { background: #e0e7ff; color: #312e81; }
+.safePivot-wrapper .safePivot-type-chr  { background: #e2e8f0; color: #1e293b; }
+.safePivot-wrapper .safePivot-type-fct  { background: #f3e8ff; color: #581c87; }
+.safePivot-wrapper .safePivot-type-ord  { background: #ede9fe; color: #4c1d95; }
+.safePivot-wrapper .safePivot-type-date { background: #d1fae5; color: #064e3b; }
+.safePivot-wrapper .safePivot-type-time { background: #ccfbf1; color: #115e59; }
+.safePivot-wrapper .safePivot-type-lgl  { background: #fef3c7; color: #78350f; }
+.safePivot-wrapper .safePivot-type-list { background: #ffedd5; color: #7c2d12; }
+.safePivot-wrapper .safePivot-type-obj  { background: #ffe4e6; color: #881337; }
+
+
+/* ------------------------------------------------------------
+   6. Result table
+   ------------------------------------------------------------ */
+
+.safePivot-wrapper td.pvtRendererArea {
+  padding: 0;
 }
-
-/* integer */
-.safePivot-wrapper .safePivot-type-int {
-  background-color: #e0e7ff;
-  color: #3730a3;
-  border-color: #c7d2fe;
-}
-
-/* character */
-.safePivot-wrapper .safePivot-type-chr {
-  background-color: #f1f5f9;
-  color: #334155;
-  border-color: #cbd5e1;
-}
-
-/* factor */
-.safePivot-wrapper .safePivot-type-fct {
-  background-color: #f3e8ff;
-  color: #6b21a8;
-  border-color: #e9d5ff;
-}
-
-/* ordered factor */
-.safePivot-wrapper .safePivot-type-ord {
-  background-color: #ede9fe;
-  color: #5b21b6;
-  border-color: #ddd6fe;
-}
-
-/* Date */
-.safePivot-wrapper .safePivot-type-date {
-  background-color: #d1fae5;
-  color: #065f46;
-  border-color: #a7f3d0;
-}
-
-/* POSIX date-time */
-.safePivot-wrapper .safePivot-type-time {
-  background-color: #ccfbf1;
-  color: #134e4a;
-  border-color: #99f6e4;
-}
-
-/* logical */
-.safePivot-wrapper .safePivot-type-lgl {
-  background-color: #fef3c7;
-  color: #92400e;
-  border-color: #fde68a;
-}
-
-/* list */
-.safePivot-wrapper .safePivot-type-list {
-  background-color: #ffedd5;
-  color: #9a3412;
-  border-color: #fed7aa;
-}
-
-/* object / other */
-.safePivot-wrapper .safePivot-type-obj {
-  background-color: #ffe4e6;
-  color: #9f1239;
-  border-color: #fecdd3;
-}
-
-
-/* ============================================================
-   6. Pivot result table
-   ============================================================ */
 
 .safePivot-wrapper table.pvtTable {
-  border-collapse: collapse;
-  margin-top: 6px;
-  max-width: 100%;
-  font-size: var(--safePivot-table-font-size) !important;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--safePivot-table-font-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--safePivot-text);
+  border: 1px solid var(--safePivot-border-strong);
+  border-radius: var(--safePivot-radius);
+  overflow: hidden;
 }
 
-/* Row and column headers */
+/* Headers: variable names, row labels and column labels */
 .safePivot-wrapper table.pvtTable thead tr th,
 .safePivot-wrapper table.pvtTable tbody tr th {
-  background: var(--safePivot-header-bg) !important;
-  color: #111827 !important;
-  border: 1px solid #c7d2d2 !important;
-
-  padding: 8px 11px !important;
-
-  font-size: var(--safePivot-table-font-size) !important;
-  font-weight: 800 !important;
-  text-align: center;
+  padding: 8px 12px;
+  font-size: inherit;
+  font-weight: 600;
+  color: var(--safePivot-text);
+  text-align: left;
   white-space: nowrap;
+  vertical-align: middle;
+  background: var(--safePivot-header-bg);
+  border: 0;
+  border-right: 1px solid var(--safePivot-border);
+  border-bottom: 1px solid var(--safePivot-border);
+}
+
+/* Variable-name cells (the "farm", "year" labels) */
+.safePivot-wrapper table.pvtTable th.pvtAxisLabel {
+  font-size: 0.82em;
+  font-weight: 600;
+  color: var(--safePivot-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Column value headers sit above numbers: right-align them */
+.safePivot-wrapper table.pvtTable thead th.pvtColLabel,
+.safePivot-wrapper table.pvtTable thead th.pvtTotalLabel {
+  text-align: right;
+}
+
+/* Strong line under the header block and after the row labels */
+.safePivot-wrapper table.pvtTable thead tr:last-child th {
+  border-bottom: 1px solid var(--safePivot-border-strong);
 }
 
 /* Data cells */
 .safePivot-wrapper table.pvtTable tbody tr td {
-  border: 1px solid var(--safePivot-border) !important;
-
-  padding: 8px 11px !important;
-
-  color: #111827;
-  font-size: var(--safePivot-table-font-size) !important;
+  padding: 8px 12px;
+  font-size: inherit;
+  color: var(--safePivot-text);
   text-align: right;
   white-space: nowrap;
+  background-color: var(--safePivot-surface);
+  border: 0;
+  border-right: 1px solid var(--safePivot-border);
+  border-bottom: 1px solid var(--safePivot-border);
+}
+
+.safePivot-wrapper table.pvtTable tr > :last-child {
+  border-right: 0;
+}
+
+.safePivot-wrapper table.pvtTable tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+/* Row hover (table renderer only; heatmaps keep their colours) */
+.safePivot-wrapper.safePivot-table-renderer table.pvtTable tbody tr:hover td.pvtVal {
+  background-color: var(--safePivot-row-hover);
 }
 
 /* Totals */
-.safePivot-wrapper table.pvtTable .pvtTotal,
-.safePivot-wrapper table.pvtTable .pvtGrandTotal {
-  font-weight: 900 !important;
-  color: #111827 !important;
+.safePivot-wrapper table.pvtTable tbody tr td.pvtTotal,
+.safePivot-wrapper table.pvtTable tbody tr td.pvtGrandTotal {
+  font-weight: 600;
+}
+
+.safePivot-wrapper.safePivot-table-renderer table.pvtTable tbody tr td.pvtTotal,
+.safePivot-wrapper.safePivot-table-renderer table.pvtTable tbody tr td.pvtGrandTotal {
+  background-color: var(--safePivot-total-bg);
+}
+
+/* Line before the row-totals column and above the column-totals row */
+.safePivot-wrapper table.pvtTable td.rowTotal,
+.safePivot-wrapper table.pvtTable th.pvtRowTotalLabel,
+.safePivot-wrapper table.pvtTable td.pvtGrandTotal {
+  border-left: 1px solid var(--safePivot-border-strong);
+}
+
+.safePivot-wrapper table.pvtTable th.pvtColTotalLabel,
+.safePivot-wrapper table.pvtTable td.colTotal,
+.safePivot-wrapper table.pvtTable td.pvtGrandTotal {
+  border-top: 1px solid var(--safePivot-border-strong);
+}
+
+.safePivot-wrapper table.pvtTable .pvtTotalLabel {
+  font-weight: 700;
 }
 
 
-/* ============================================================
-   7. Conditional formatting
-   Priority:
-   empty / unavailable cells > zero cells > high / low values
-   ============================================================ */
+/* ------------------------------------------------------------
+   7. Conditional formatting (Table renderer)
+   JS adds these classes to data cells only, never to totals.
+   Priority: empty > zero > high / low.
+   ------------------------------------------------------------ */
 
-/* High numeric values */
 .safePivot-wrapper table.pvtTable tbody td.safePivot-cell-high {
-  background-color: #fff7ed !important;
-  color: #111827 !important;
-  font-weight: 800 !important;
-  outline: 2px solid #fb923c !important;
-  outline-offset: -2px;
+  background-color: #ffedd5;
+  color: #9a3412;
+  font-weight: 600;
 }
 
-/* Low numeric values */
 .safePivot-wrapper table.pvtTable tbody td.safePivot-cell-low {
-  background-color: #eff6ff !important;
-  color: #1e3a8a !important;
-  font-weight: 700 !important;
+  background-color: #dbeafe;
+  color: #1e40af;
+  font-weight: 600;
 }
 
-/* Empty / unavailable displayed cells */
-.safePivot-wrapper table.pvtTable tbody td.safePivot-cell-empty,
-.safePivot-wrapper table.pvtTable tbody td.safePivot-cell-missing {
-  background-color: #e5e7eb !important;
-  color: #6b7280 !important;
-  font-style: italic !important;
-  font-weight: 500 !important;
-  outline: none !important;
-}
-
-/* Displayed zero values */
 .safePivot-wrapper table.pvtTable tbody td.safePivot-cell-zero {
-  background-color: #fef3c7 !important;
-  color: #78350f !important;
-  font-weight: 800 !important;
-  outline: 2px solid #f59e0b !important;
-  outline-offset: -2px;
+  background-color: #fef9c3;
+  color: #854d0e;
+  font-weight: 600;
+}
+
+.safePivot-wrapper table.pvtTable tbody td.safePivot-cell-empty {
+  color: var(--safePivot-text-muted);
+  background-color: var(--safePivot-surface-alt);
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 6px,
+    rgba(100, 116, 139, 0.08) 6px 7px
+  );
+}
+
+.safePivot-wrapper.safePivot-table-renderer table.pvtTable tbody tr:hover td.safePivot-cell-high,
+.safePivot-wrapper.safePivot-table-renderer table.pvtTable tbody tr:hover td.safePivot-cell-low,
+.safePivot-wrapper.safePivot-table-renderer table.pvtTable tbody tr:hover td.safePivot-cell-zero {
+  filter: brightness(0.97);
 }
 
 
-/* ============================================================
-   8. Filter box and small UI polish
-   ============================================================ */
-
-.safePivot-wrapper .pvtHorizList,
-.safePivot-wrapper .pvtVertList {
-  min-height: 30px;
-}
+/* ------------------------------------------------------------
+   8. Filter box (pops up from a pill's ▾)
+   ------------------------------------------------------------ */
 
 .safePivot-wrapper .pvtFilterBox {
-  border: 1px solid #cbd5e1 !important;
-  border-radius: 6px;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.15);
+  width: 300px;
+  padding: 4px 0 0;
   font-size: var(--safePivot-ui-font-size);
+  text-align: left;
+  color: var(--safePivot-text);
+  background: var(--safePivot-surface);
+  border: 1px solid var(--safePivot-border-strong);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+  overflow: hidden;
+}
+
+.safePivot-wrapper .pvtFilterBox h4 {
+  margin: 10px 14px 6px;
+  font-size: 1em;
+  font-weight: 600;
+}
+
+.safePivot-wrapper .pvtFilterBox h4 .count {
+  margin-left: 4px;
+  font-weight: 400;
+  color: var(--safePivot-text-muted);
+}
+
+.safePivot-wrapper .pvtFilterBox p {
+  margin: 8px 14px;
+  text-align: left;
+}
+
+.safePivot-wrapper .pvtFilterBox input.pvtSearch,
+.safePivot-wrapper .pvtFilterBox input[type="text"] {
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  font: inherit;
+  border: 1px solid var(--safePivot-border-strong);
+  border-radius: var(--safePivot-radius-sm);
+}
+
+.safePivot-wrapper .pvtFilterBox .pvtCheckContainer {
+  max-height: 260px;
+  padding: 4px 0;
+  font-size: inherit;
+  border-color: var(--safePivot-border);
+}
+
+.safePivot-wrapper .pvtFilterBox .pvtCheckContainer p {
+  margin: 0;
+  padding: 3px 14px;
+}
+
+.safePivot-wrapper .pvtFilterBox .pvtCheckContainer p:hover {
+  background: var(--safePivot-surface-alt);
+}
+
+.safePivot-wrapper .pvtFilterBox .pvtCheckContainer label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.safePivot-wrapper .pvtFilterBox input[type="checkbox"] {
+  margin: 0;
+  accent-color: var(--safePivot-accent);
+}
+
+.safePivot-wrapper .pvtFilterBox .count {
+  margin-left: auto;
+  color: var(--safePivot-text-muted);
 }
 
 .safePivot-wrapper .pvtFilterBox button {
-  border: 1px solid #9ca3af;
-  border-radius: 4px;
-  background: #ffffff;
-  padding: 4px 9px;
-  font-size: var(--safePivot-ui-font-size);
+  height: 30px;
+  margin: 0 6px 0 0;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 0.92em;
+  color: var(--safePivot-text);
+  background: var(--safePivot-surface);
+  border: 1px solid var(--safePivot-border-strong);
+  border-radius: var(--safePivot-radius-sm);
+  cursor: pointer;
 }
 
 .safePivot-wrapper .pvtFilterBox button:hover {
-  background: #f1f5f9;
+  background: var(--safePivot-surface-alt);
+}
+
+/* Last row of the box: Apply / Cancel */
+.safePivot-wrapper .pvtFilterBox > p:last-child {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin: 0;
+  padding: 10px 14px;
+  background: var(--safePivot-surface-alt);
+  border-top: 1px solid var(--safePivot-border);
+}
+
+.safePivot-wrapper .pvtFilterBox > p:last-child button {
+  margin: 0;
+}
+
+.safePivot-wrapper .pvtFilterBox > p:last-child button:first-child {
+  color: #ffffff;
+  background: var(--safePivot-accent);
+  border-color: var(--safePivot-accent);
+}
+
+.safePivot-wrapper .pvtFilterBox > p:last-child button:first-child:hover {
+  background: #1d4ed8;
 }
 
 
-/* ============================================================
-   9. Table / heatmap compact mode
-   Requires JS class: safePivot-table-mode
-   ============================================================ */
-
-.safePivot-wrapper.safePivot-table-mode {
-  overflow-x: auto;
-}
-
-/* Keep table-like renderers compact instead of forcing full width */
-.safePivot-wrapper.safePivot-table-mode table.pvtUi {
-  width: auto !important;
-  table-layout: auto !important;
-}
-
-.safePivot-wrapper.safePivot-table-mode td.pvtRendererArea,
-.safePivot-wrapper.safePivot-table-mode .pvtRendererArea {
-  width: auto !important;
-  max-width: none !important;
-  vertical-align: top;
-}
-
-.safePivot-wrapper.safePivot-table-mode .pvtTable {
-  display: inline-table;
-  width: auto !important;
-}
-
-
-/* ============================================================
-   10. Plotly chart full-width mode
-   Requires JS class: safePivot-plotly-mode
-   ============================================================ */
+/* ------------------------------------------------------------
+   9. Chart renderers (Plotly)
+   JS sizes the chart; this only centres it and avoids clipping.
+   ------------------------------------------------------------ */
 
 .safePivot-wrapper.safePivot-plotly-mode table.pvtUi {
-  width: 100% !important;
+  width: 100%;
 }
 
-.safePivot-wrapper.safePivot-plotly-mode td.pvtRendererArea,
-.safePivot-wrapper.safePivot-plotly-mode .pvtRendererArea {
-  width: 100% !important;
-  vertical-align: top;
+.safePivot-wrapper.safePivot-plotly-mode td.pvtRendererArea {
+  width: 100%;
+  text-align: center;
 }
 
 .safePivot-wrapper.safePivot-plotly-mode .js-plotly-plot {
-  width: 100% !important;
+  display: inline-block;
+  max-width: 100%;
+  text-align: left;
 }
 
 
-/* ============================================================
-   11. General chart fallback / message area
-   ============================================================ */
+/* ------------------------------------------------------------
+   10. Messages
+   ------------------------------------------------------------ */
+
+.safePivot-wrapper .safePivot-error {
+  margin: 12px;
+  padding: 12px 16px;
+  color: #7f1d1d;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--safePivot-radius);
+}
 
 .safePivot-empty-chart {
-  min-height: 260px;
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 260px;
   padding: 1rem;
-  color: #6b7280;
+  color: #64748b;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-
-
-/* ============================================================
-   12. Plotly readability and sizing fixes
-   These rules work with safePivot_fixed.js.
-   ============================================================ */
-
-/* In chart mode, avoid horizontal page scrolling caused by a very wide Plotly div. */
-.safePivot-wrapper.safePivot-plotly-mode {
-  overflow-x: hidden;
-  overflow-y: visible;
-}
-
-/* Keep the Plotly renderer area clean and allow axis/legend text to be visible. */
-.safePivot-wrapper.safePivot-plotly-mode td.pvtRendererArea,
-.safePivot-wrapper.safePivot-plotly-mode .pvtRendererArea {
-  overflow: visible !important;
-  padding: 0 8px 12px 8px !important;
-  vertical-align: top;
-}
-
-/* The JS caps the Plotly width; this centers the generated chart. */
-.safePivot-wrapper.safePivot-plotly-mode .js-plotly-plot {
-  margin-left: auto !important;
-  margin-right: auto !important;
-  max-width: 1150px;
-}
-
-/* Make Plotly titles and axis labels more readable when Plotly creates SVG text. */
-.safePivot-wrapper.safePivot-plotly-mode .js-plotly-plot .gtitle,
-.safePivot-wrapper.safePivot-plotly-mode .js-plotly-plot .xtitle,
-.safePivot-wrapper.safePivot-plotly-mode .js-plotly-plot .ytitle {
-  font-weight: 800;
-}
-
-/* Let PivotTable.js cells size naturally; JS now controls the chart height. */
-.safePivot-wrapper table.pvtUi td.pvtRows,
-.safePivot-wrapper table.pvtUi td.pvtCols,
-.safePivot-wrapper table.pvtUi td.pvtVals,
-.safePivot-wrapper table.pvtUi td.pvtUnused,
-.safePivot-wrapper table.pvtUi td.pvtRendererArea {
-  box-sizing: border-box;
-}
-
-.safePivot-wrapper.safePivot-plotly-mode td.pvtRendererArea,
-.safePivot-wrapper.safePivot-plotly-mode .pvtRendererArea {
-  text-align: center;
-  overflow-x: hidden;
-  padding-bottom: 12px !important;
-}
-
-.safePivot-wrapper.safePivot-plotly-mode .js-plotly-plot {
-  display: inline-block !important;
-  max-width: 1150px !important;
-  width: 100% !important;
-}
-
-/* ============================================================
-   13. Unused-variable layout
-   PivotTable.js auto-selects:
-   - pvtHorizList = top unused area
-   - pvtVertList  = left unused area
-   ============================================================ */
-
-/* TOP unused area: horizontal, but allow multiple rows */
-.safePivot-wrapper table.pvtUi td.pvtUnused.pvtHorizList {
-  white-space: normal !important;
-  overflow-x: visible !important;
-  overflow-y: visible !important;
-}
-
-.safePivot-wrapper table.pvtUi td.pvtUnused.pvtHorizList > li {
-  display: inline-flex !important;
-  vertical-align: top !important;
-  max-width: 100% !important;
-  white-space: nowrap !important;
-}
-
-/* LEFT unused area: force ONE COLUMN only */
-.safePivot-wrapper table.pvtUi td.pvtUnused.pvtVertList {
-  white-space: normal !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-}
-
-.safePivot-wrapper table.pvtUi td.pvtUnused.pvtVertList > li {
-  display: flex !important;
-  width: fit-content !important;
-  max-width: 100% !important;
-  margin: 4px 0 !important;
-  clear: both !important;
-}
-
-/* Keep pills readable in both top and left unused areas */
-.safePivot-wrapper table.pvtUi td.pvtUnused.pvtHorizList > li .pvtAttr,
-.safePivot-wrapper table.pvtUi td.pvtUnused.pvtVertList > li .pvtAttr {
-  max-width: 100% !important;
 }

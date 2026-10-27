@@ -649,11 +649,11 @@ test_that("safe_pivot_compute_from_config uses defaults when config is NULL", {
 })
 
 
-test_that("safe_pivot_compute_from_config falls back to defaults for empty config fields", {
+test_that("safe_pivot_compute_from_config keeps cleared fields empty", {
   cfg <- list(
     rows = list(),
     cols = list(),
-    vals = list(),
+    vals = list("Sepal.Length"),
     aggregatorName = NULL
   )
 
@@ -661,14 +661,126 @@ test_that("safe_pivot_compute_from_config falls back to defaults for empty confi
     iris,
     config = cfg,
     default_rows = "Species",
-    default_vals = "Sepal.Length",
+    default_cols = "Species",
+    default_vals = "Sepal.Width",
     default_aggregator = "Mean"
   )
 
   expect_safe_pivot_result(res)
-  expect_equal(res$config$rows, "Species")
+  expect_equal(res$config$rows, character())
+  expect_equal(res$config$cols, character())
   expect_equal(res$config$vals, "Sepal.Length")
   expect_equal(res$config$aggregator, "Mean")
+  expect_equal(nrow(res$long), 1)
+  expect_equal(res$long$.value, mean(iris$Sepal.Length))
+})
+
+
+test_that("safe_pivot_compute_from_config applies exclusions from config", {
+  cfg <- list(
+    rows = list("Species"),
+    cols = list(),
+    vals = list("Sepal.Length"),
+    aggregatorName = "Mean",
+    exclusions = list(Species = list("setosa")),
+    inclusions = list(Species = list("versicolor", "virginica"))
+  )
+
+  res <- safe_pivot_compute_from_config(iris, config = cfg)
+
+  expect_safe_pivot_result(res)
+  expect_setequal(as.character(res$long$Species), c("versicolor", "virginica"))
+  expect_equal(
+    res$long$.value[res$long$Species == "virginica"],
+    mean(iris$Sepal.Length[iris$Species == "virginica"])
+  )
+  expect_equal(res$config$exclusions, list(Species = "setosa"))
+})
+
+
+test_that("safe_pivot_compute_from_config applies filters on unused variables", {
+  cfg <- list(
+    rows = list(),
+    cols = list(),
+    vals = list(),
+    aggregatorName = "Count",
+    exclusions = list(Species = list("setosa", "virginica"))
+  )
+
+  res <- safe_pivot_compute_from_config(iris, config = cfg)
+
+  expect_equal(res$long$.value, 50)
+})
+
+
+test_that("safe_pivot_compute_from_config applies inclusions", {
+  cfg <- list(
+    rows = list("Species"),
+    aggregatorName = "Count",
+    inclusions = list(Species = list("setosa"))
+  )
+
+  res <- safe_pivot_compute_from_config(iris, config = cfg)
+
+  expect_equal(as.character(res$long$Species), "setosa")
+})
+
+
+test_that("safe_pivot_compute_from_config uses default filters only when config is NULL", {
+  res <- safe_pivot_compute_from_config(
+    iris,
+    config = NULL,
+    default_rows = "Species",
+    default_aggregator = "Count",
+    default_exclusions = list(Species = "setosa")
+  )
+
+  expect_false("setosa" %in% as.character(res$long$Species))
+
+  res2 <- safe_pivot_compute_from_config(
+    iris,
+    config = list(rows = list("Species"), aggregatorName = "Count"),
+    default_exclusions = list(Species = "setosa")
+  )
+
+  expect_true("setosa" %in% as.character(res2$long$Species))
+})
+
+
+test_that("safe_pivot_compute_from_config filters match browser keys for missing values", {
+  df <- data.frame(
+    grp = c("a", NA, "b", "b"),
+    num = c(1, NA, 2, 3),
+    flag = c(TRUE, FALSE, NA, TRUE),
+    stringsAsFactors = FALSE
+  )
+
+  res <- safe_pivot_compute_from_config(
+    df,
+    config = list(
+      aggregatorName = "Count",
+      exclusions = list(grp = list("(Missing)"))
+    )
+  )
+  expect_equal(res$long$.value, 3)
+
+  res <- safe_pivot_compute_from_config(
+    df,
+    config = list(
+      aggregatorName = "Count",
+      exclusions = list(num = list("null"), flag = list("false"))
+    )
+  )
+  expect_equal(res$long$.value, 3)
+
+  res <- safe_pivot_compute_from_config(
+    df,
+    config = list(
+      aggregatorName = "Count",
+      exclusions = list(flag = list("null"), not_a_column = list("x"))
+    )
+  )
+  expect_equal(res$long$.value, 3)
 })
 
 
@@ -770,6 +882,102 @@ test_that("safePivot carries renderer, heatmap, and Plotly options to the widget
   expect_equal(w_plot$x$plot_default_height, 700)
   expect_equal(w_plot$x$plot_max_width, 1000)
   expect_true(is.list(w_plot$x$plotly_config))
+})
+
+
+test_that("aggregator registry is complete and consistent", {
+  reg <- safe_pivot_aggregator_registry()
+
+  expect_false(anyDuplicated(reg$name) > 0)
+  expect_true(all(reg$family %in% c(
+    "count", "count_unique", "list", "n", "percent", "fraction", "stat"
+  )))
+  expect_true(all(reg$format %in% c("integer", "number", "percent", "text")))
+  expect_true(all(!is.na(reg$measure[reg$family %in% c("n", "percent", "fraction")])))
+  expect_true(all(!is.na(reg$scope[reg$family %in% c("percent", "fraction")])))
+
+  # Every registry entry (and alias) is accepted by safe_pivot_compute().
+  for (agg in safe_pivot_allowed_aggregators()) {
+    expect_no_error(
+      safe_pivot_compute(iris, rows = "Species", vals = "Sepal.Length", aggregator = agg)
+    )
+  }
+
+  expect_equal(safe_pivot_normalize_aggregator("Missing %"), "Missing % within Cell")
+  expect_false(safe_pivot_requires_value("Count as Fraction of Rows"))
+  expect_true(safe_pivot_requires_value("Sum as Fraction of Rows"))
+})
+
+
+test_that("safePivot sends the aggregator list without aliases", {
+  w <- safePivot(iris)
+  names_sent <- vapply(w$x$aggregator_info, `[[`, character(1), "name")
+
+  expect_equal(names_sent, safe_pivot_aggregator_registry()$name)
+  expect_false("Missing %" %in% names_sent)
+})
+
+
+test_that("safePivot chooses where unused variables go", {
+  expect_false(safePivot(iris)$x$unused_attrs_vertical)
+  expect_true(safePivot(iris, unused_layout = "left")$x$unused_attrs_vertical)
+
+  wide <- as.data.frame(matrix(1, 2, 20, dimnames = list(NULL, paste0("variable_", 1:20))))
+  expect_true(safePivot(wide)$x$unused_attrs_vertical)
+  expect_false(safePivot(wide, unused_layout = "top")$x$unused_attrs_vertical)
+  expect_error(safePivot(iris, unused_layout = "bottom"))
+})
+
+
+test_that("grouped results are ordered by rows then columns", {
+  df <- data.frame(
+    a = factor(c("y", "x", "y", "x"), levels = c("y", "x")),
+    b = c("q", "p", "p", "q"),
+    v = 1:4
+  )
+
+  res <- safe_pivot_compute(df, rows = c("a", "b"), vals = "v", aggregator = "Sum")
+
+  expect_equal(as.character(res$long$a), c("y", "y", "x", "x"))
+  expect_equal(res$long$b, c("p", "q", "p", "q"))
+  expect_equal(res$long$.value, c(3, 1, 2, 4))
+})
+
+
+test_that("safePivot badges use the original column types", {
+  df <- data.frame(
+    d = as.Date("2024-01-01") + 0:2,
+    g = c("a", NA, "b"),
+    stringsAsFactors = FALSE
+  )
+
+  w <- safePivot(df)
+
+  expect_equal(w$x$variable_types$d$type, "date")
+  expect_equal(w$x$variable_types$g$type, "chr")
+})
+
+
+test_that("safePivot passes starting filters to the widget", {
+  w <- safePivot(
+    iris,
+    rows = "Species",
+    aggregator = "Count",
+    exclusions = list(Species = "setosa"),
+    inclusions = list(Species = c("versicolor", "virginica"))
+  )
+
+  expect_equal(w$x$exclusions, list(Species = list("setosa")))
+  expect_equal(w$x$inclusions, list(Species = list("versicolor", "virginica")))
+
+  json <- htmlwidgets:::toJSON(w$x)
+  expect_match(json, '"exclusions":{"Species":["setosa"]}', fixed = TRUE)
+
+  expect_error(
+    safePivot(iris, exclusions = list(not_a_column = "x")),
+    "exclusions contains unknown"
+  )
+  expect_error(safePivot(iris, exclusions = list("setosa")), "named list")
 })
 
 

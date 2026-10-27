@@ -83,15 +83,8 @@ safe_pivot_normalize_factor <- function(
   new_levels <- unique(new_levels)
   
   # ----------------------------------------------------------
-  # Rebuild factor preserving ordered status
+  # Observed non-missing values
   # ----------------------------------------------------------
-  # factor(
-  #   x_chr,
-  #   levels = new_levels,
-  #   ordered = is.ordered(x)
-  # )
-  # ----------------------------------------------------------
-  # observed NON-missing values
   observed_values <- unique(
     stats::na.omit(
       x_chr[x_chr != missing_label]

@@ -1,3 +1,89 @@
+# safePivot 0.2.0
+
+* `safe_pivot_compute_from_config()` now applies the filters chosen in the
+  browser (`inclusions` / `exclusions` in the Shiny config), so exported and
+  report results match the on-screen pivot. The applied filters are returned
+  in `res$config`.
+
+* `safe_pivot_compute_from_config()` no longer refills a cleared row, column,
+  or value field from the `default_*` arguments. Defaults are only used when
+  `config` is `NULL`.
+
+* `safePivot()` gains `inclusions` and `exclusions` arguments for starting
+  filters, and `safe_pivot_compute_from_config()` gains matching
+  `default_inclusions` / `default_exclusions`.
+
+* The `min-height: 100%` rule now applies only to safePivot's own container,
+  not to every htmlwidget on the page.
+
+## Look and layout
+
+* New `unused_layout` argument in `safePivot()`: `"top"`, `"left"`, or
+  `"auto"` (default). Auto lists unused variables in a column on the left
+  when their pills would not fit in one row (about 800px), so wide data no
+  longer makes the whole widget very wide.
+
+* Stronger text contrast: darker secondary text, borders and badge text.
+
+* Rewrote `safePivot.css`: one set of colour tokens, no duplicate blocks, and
+  far fewer `!important` rules. Variables are single pills (previously a pill
+  inside a pill) with the type badge inside, drop zones are lighter, and the
+  result table has a clean header, aligned numbers, row hover, and shaded
+  totals. Filter boxes, dropdowns and sort buttons are restyled to match.
+
+* Default font sizes are smaller: `ui_font_size = 14`, `pill_font_size = 14`,
+  `table_font_size = 15`, `badge_font_size = 11` (were 16, 17, 18, 12).
+
+## Documentation
+
+* README (pkgdown home page) and both articles now include screenshots of
+  the widget: table, heatmap, bar chart, type badges, factor order,
+  conditional formatting, filters, the wide-data layout, and the Shiny
+  export apps. The heatmap and chart examples now use `mtcars` (cyl x gear)
+  so the pictures stay readable, and the chart example uses the correct
+  argument `plot_default_height` (it used `plot_height`, which does not
+  exist).
+
+* `tools/doc-figures/` regenerates the screenshots from the documented code
+  (R + Node/Playwright); see the header of `figures.R`.
+
+* The aggregator and both sort-order buttons stay on one line in narrow
+  layouts.
+
+## Internals
+
+* One aggregator table (`R/aggregators.R`) now drives both the R
+  computations and the browser widget. The browser builds its aggregators
+  from that table, so the two lists can no longer drift apart. The old names
+  `"Missing %"` and `"Non-missing %"` are still accepted from R, but no longer
+  appear twice in the dropdown.
+
+* Grouping in `safe_pivot_compute()` uses `dplyr` with vectorised counts:
+  about 3x faster for the missing/zero percentage and fraction aggregators on
+  large data. Values are unchanged. Result rows are now ordered by the row
+  variables, then the column variables (each row group stays together, as
+  in the browser), and a numeric grouping variable with `NA` values gets an
+  `NA` group instead of those rows being dropped.
+
+## Bug fixes
+
+* High/low conditional formatting now scales over data cells only. Totals were
+  included, so they were always "high" and most cells came out "low".
+
+* Type badges are computed from the original data, so Date and date-time
+  columns show `date` / `time` instead of `chr`.
+
+* Charts are sized to the space right of the rows panel (and of the unused
+  variables column, when it is on the left), so the legend is no
+  longer clipped, and resizing keeps the chart options passed from R
+  (`plot_default_height`, font sizes, `plotly_layout`, ...).
+
+* Removed panel-height syncing code that had no effect (`min-height` does not
+  apply to table cells).
+
+* Declared `Depends: R (>= 4.1.0)` (the code uses the native pipe) and cleaned
+  up `.Rbuildignore`.
+
 # safePivot 0.1.1
 
 ## Major stability update
