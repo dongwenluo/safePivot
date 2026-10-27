@@ -1,3 +1,21 @@
+# safePivot (development version)
+
+* `safe_pivot_compute_from_config()` now applies the filters chosen in the
+  browser (`inclusions` / `exclusions` in the Shiny config), so exported and
+  report results match the on-screen pivot. The applied filters are returned
+  in `res$config`.
+
+* `safe_pivot_compute_from_config()` no longer refills a cleared row, column,
+  or value field from the `default_*` arguments. Defaults are only used when
+  `config` is `NULL`.
+
+* `safePivot()` gains `inclusions` and `exclusions` arguments for starting
+  filters, and `safe_pivot_compute_from_config()` gains matching
+  `default_inclusions` / `default_exclusions`.
+
+* The `min-height: 100%` rule now applies only to safePivot's own container,
+  not to every htmlwidget on the page.
+
 # safePivot 0.1.1
 
 ## Major stability update

@@ -28,7 +28,7 @@
   --safePivot-unused-bg: #f8fafc;
 }
 
-.html-widget,
+/* Only safePivot's own container: other htmlwidgets on the page keep their size. */
 .safePivot-wrapper {
   min-height: 100%;
 }

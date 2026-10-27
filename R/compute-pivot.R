@@ -905,18 +905,122 @@ safe_pivot_config_scalar <- function(x, default) {
   }
 }
 
+# ------------------------------------------------------------
+# Pivot filters (PivotTable.js inclusions / exclusions)
+# ------------------------------------------------------------
+
+# Clean a filter list into a named list of character vectors.
+# Accepts Shiny-style input (lists of lists / scalars) and R-style named lists.
+safe_pivot_clean_filters <- function(x, arg = "filters") {
+  if (is.null(x) || length(x) == 0) {
+    return(list())
+  }
+
+  if (!is.list(x)) {
+    stop("`", arg, "` must be NULL or a named list.", call. = FALSE)
+  }
+
+  nms <- names(x)
+
+  if (is.null(nms) || any(is.na(nms) | !nzchar(nms))) {
+    stop("`", arg, "` must be a named list (one element per variable).", call. = FALSE)
+  }
+
+  out <- lapply(x, function(v) {
+    if (is.null(v)) {
+      return(character())
+    }
+
+    if (is.list(v)) {
+      v <- unlist(lapply(v, function(e) if (is.null(e)) NA else e), use.names = FALSE)
+    }
+
+    safe_pivot_filter_key(v)
+  })
+
+  names(out) <- nms
+  out
+}
+
+# Convert values to the strings PivotTable.js uses when filtering:
+# `"" + (value ?? "null")` in the browser.
+safe_pivot_filter_key <- function(x) {
+  if (is.factor(x)) {
+    x <- as.character(x)
+  }
+
+  out <- if (is.logical(x)) tolower(as.character(x)) else as.character(x)
+  out[is.na(x)] <- "null"
+  out
+}
+
+# Return a logical vector of rows kept by the filters.
+safe_pivot_filter_rows <- function(
+    data,
+    inclusions = list(),
+    exclusions = list(),
+    missing_label = "(Missing)",
+    show_missing_category = TRUE
+) {
+  keep <- rep(TRUE, nrow(data))
+
+  vars <- intersect(union(names(inclusions), names(exclusions)), names(data))
+
+  if (length(vars) == 0) {
+    return(keep)
+  }
+
+  # Match the values the browser sees: the widget pivots on prepared data.
+  prepared <- safe_pivot_prepare_data(
+    data = data[vars],
+    missing_label = missing_label,
+    show_missing_category = show_missing_category
+  )
+
+  for (nm in vars) {
+    key <- safe_pivot_filter_key(prepared[[nm]])
+
+    excl <- exclusions[[nm]]
+    if (length(excl) > 0) {
+      keep <- keep & !(key %in% excl)
+    }
+
+    incl <- inclusions[[nm]]
+    if (length(incl) > 0) {
+      keep <- keep & key %in% incl
+    }
+  }
+
+  keep
+}
+
 #' Compute pivot result from a Shiny safePivot config
+#'
+#' Rows, columns, values, aggregator, and filters are read from `config`
+#' exactly as the browser sent them. The `default_*` arguments are only used
+#' when `config` is `NULL` (before the widget has reported its state), so
+#' clearing a field in the browser gives an empty field here too.
+#'
+#' Filters follow PivotTable.js: `exclusions` and `inclusions` are named lists
+#' of values per variable. A row is dropped when its value is listed in
+#' `exclusions`, or when its variable has `inclusions` and the value is not
+#' listed there. Variables not present in `data` are ignored. Missing values
+#' match `missing_label` for categorical variables and `"null"` otherwise.
 #'
 #' @param data A data frame.
 #' @param config A pivot configuration object, usually `input$<outputId>_config`.
 #' @param default_rows Default row variables used when `config` is `NULL`.
 #' @param default_cols Default column variables used when `config` is `NULL`.
 #' @param default_vals Default value variable used when `config` is `NULL`.
-#' @param default_aggregator Default aggregator used when `config` is `NULL`.
+#' @param default_aggregator Default aggregator used when `config` is `NULL`,
+#'   or when `config` has no aggregator.
+#' @param default_inclusions,default_exclusions Default filters used when
+#'   `config` is `NULL`. Use the same values passed to `safePivot()`.
 #' @param missing_label Label for missing categorical values.
 #' @param show_missing_category Whether missing categorical values are shown as a level.
 #'
-#' @return A list with `long`, `wide`, and `config`.
+#' @return A list with `long`, `wide`, and `config`. `config` also holds the
+#'   `inclusions` and `exclusions` that were applied.
 #'
 #' @examples
 #' res <- safe_pivot_compute_from_config(
@@ -927,6 +1031,16 @@ safe_pivot_config_scalar <- function(x, default) {
 #'   default_aggregator = "Median"
 #' )
 #'
+#' res <- safe_pivot_compute_from_config(
+#'   iris,
+#'   config = list(
+#'     rows = list("Species"),
+#'     vals = list("Sepal.Length"),
+#'     aggregatorName = "Mean",
+#'     exclusions = list(Species = list("setosa"))
+#'   )
+#' )
+#'
 #' @export
 safe_pivot_compute_from_config <- function(
     data,
@@ -935,19 +1049,22 @@ safe_pivot_compute_from_config <- function(
     default_cols = NULL,
     default_vals = NULL,
     default_aggregator = "Median",
+    default_inclusions = NULL,
+    default_exclusions = NULL,
     missing_label = "(Missing)",
     show_missing_category = TRUE
 ) {
-  default_rows <- safe_pivot_config_chr(default_rows)
-  default_cols <- safe_pivot_config_chr(default_cols)
-  default_vals <- safe_pivot_config_chr(default_vals)
+  stopifnot(is.data.frame(data))
 
   if (is.null(config)) {
-    rows <- default_rows
-    cols <- default_cols
-    vals <- default_vals
+    rows <- safe_pivot_config_chr(default_rows)
+    cols <- safe_pivot_config_chr(default_cols)
+    vals <- safe_pivot_config_chr(default_vals)
     aggregator <- default_aggregator
+    inclusions <- safe_pivot_clean_filters(default_inclusions, "default_inclusions")
+    exclusions <- safe_pivot_clean_filters(default_exclusions, "default_exclusions")
   } else {
+    # An empty field means the user cleared it; do not refill from defaults.
     rows <- safe_pivot_config_chr(config$rows)
     cols <- safe_pivot_config_chr(config$cols)
     vals <- safe_pivot_config_chr(config$vals)
@@ -955,29 +1072,20 @@ safe_pivot_compute_from_config <- function(
       config$aggregatorName,
       default_aggregator
     )
-
-    # PivotTable.js can send empty lists when the user has not selected a field.
-    # For export/report workflows, fall back field-by-field to the defaults
-    # supplied by the Shiny server.
-    if (length(rows) == 0 && length(default_rows) > 0) {
-      rows <- default_rows
-    }
-
-    if (length(cols) == 0 && length(default_cols) > 0) {
-      cols <- default_cols
-    }
-
-    if (length(vals) == 0 && length(default_vals) > 0) {
-      vals <- default_vals
-    }
-
-    if (is.null(aggregator) || !nzchar(aggregator)) {
-      aggregator <- default_aggregator
-    }
+    inclusions <- safe_pivot_clean_filters(config$inclusions, "config$inclusions")
+    exclusions <- safe_pivot_clean_filters(config$exclusions, "config$exclusions")
   }
 
-  safe_pivot_compute(
-    data = data,
+  keep <- safe_pivot_filter_rows(
+    data,
+    inclusions = inclusions,
+    exclusions = exclusions,
+    missing_label = missing_label,
+    show_missing_category = show_missing_category
+  )
+
+  res <- safe_pivot_compute(
+    data = data[keep, , drop = FALSE],
     rows = rows,
     cols = cols,
     vals = vals,
@@ -985,4 +1093,8 @@ safe_pivot_compute_from_config <- function(
     missing_label = missing_label,
     show_missing_category = show_missing_category
   )
+
+  res$config$inclusions <- inclusions
+  res$config$exclusions <- exclusions
+  res
 }

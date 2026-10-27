@@ -122,6 +122,15 @@ safePivot_dependencies <- function() {
 #' @param plotly_config Optional named list of Plotly config values merged into
 #'   the default chart config.
 #' @param max_rows Maximum number of rows allowed for browser-side pivoting.
+#' @param inclusions,exclusions Optional starting filters, as named lists of
+#'   values per variable (the same format PivotTable.js uses), for example
+#'   `exclusions = list(Species = "setosa")`. A value in `exclusions` starts
+#'   unticked in that variable's filter box; when a variable has `inclusions`,
+#'   only those values start ticked. Missing values are written as
+#'   `missing_label` for categorical variables and `"null"` otherwise. Pass the
+#'   same lists as `default_inclusions` / `default_exclusions` to
+#'   `safe_pivot_compute_from_config()` so R matches the browser before the
+#'   widget reports its state.
 #' @param width Widget width.
 #' @param height Widget height.
 #'
@@ -173,6 +182,8 @@ safePivot <- function(
     plotly_layout = NULL,
     plotly_config = NULL,
     max_rows = 100000,
+    inclusions = NULL,
+    exclusions = NULL,
     width = "100%",
     height = NULL
 ) {
@@ -243,6 +254,11 @@ safePivot <- function(
   check_vars(rows, "rows")
   check_vars(cols, "cols")
   check_vars(vals, "vals")
+
+  inclusions <- safe_pivot_clean_filters(inclusions, "inclusions")
+  exclusions <- safe_pivot_clean_filters(exclusions, "exclusions")
+  check_vars(names(inclusions), "inclusions")
+  check_vars(names(exclusions), "exclusions")
   
   data <- safe_pivot_prepare_data(
     data = data,
@@ -368,7 +384,10 @@ safePivot <- function(
     plotly_layout = plotly_layout %||% list(),
     plotly_config = plotly_config %||% list(),
     allowed_renderers = allowed_renderers,
-    allowed_aggregators = allowed_aggregators
+    allowed_aggregators = allowed_aggregators,
+    # as.list() keeps one-value filters as JSON arrays
+    inclusions = lapply(inclusions, as.list),
+    exclusions = lapply(exclusions, as.list)
   )
   
   htmlwidgets::createWidget(

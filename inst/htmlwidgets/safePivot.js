@@ -854,6 +854,21 @@ HTMLWidgets.widget({
         5. Shiny config cleaning
         ============================================================ */
 
+        function cleanFilters(filters) {
+            var out = {};
+
+            if (!filters || typeof filters !== "object" || Array.isArray(filters))
+                return out;
+
+            Object.keys(filters).forEach(function (attr) {
+                out[attr] = asArray(filters[attr]).map(function (v) {
+                    return v === null || v === undefined ? "null" : String(v);
+                });
+            });
+
+            return out;
+        }
+
         function cleanConfig(config) {
             config = config || {};
 
@@ -863,8 +878,8 @@ HTMLWidgets.widget({
                 vals: asArray(config.vals),
                 aggregatorName: config.aggregatorName || null,
                 rendererName: config.rendererName || null,
-                inclusions: config.inclusions || {},
-                exclusions: config.exclusions || {}
+                inclusions: cleanFilters(config.inclusions),
+                exclusions: cleanFilters(config.exclusions)
             };
         }
 
@@ -1651,7 +1666,9 @@ HTMLWidgets.widget({
                     renderers: renderers,
                     sorters: sorters,
                     rendererOptions: makeRendererOptions(x),
-                    
+                    inclusions: cleanFilters(x.inclusions),
+                    exclusions: cleanFilters(x.exclusions),
+
                     unusedAttrsVertical: "auto",
 
                     onRefresh: function (config) {
@@ -1695,7 +1712,9 @@ HTMLWidgets.widget({
                     cols: asArray(x.cols),
                     vals: asArray(x.vals),
                     aggregatorName: resolvedAggregatorName,
-                    rendererName: resolvedRendererName
+                    rendererName: resolvedRendererName,
+                    inclusions: x.inclusions,
+                    exclusions: x.exclusions
                 });
                 el.safePivotLastRenderer = resolvedRendererName;
 

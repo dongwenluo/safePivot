@@ -38,6 +38,8 @@ safePivot(
   plotly_layout = NULL,
   plotly_config = NULL,
   max_rows = 1e+05,
+  inclusions = NULL,
+  exclusions = NULL,
   width = "100\%",
   height = NULL
 )
@@ -122,6 +124,16 @@ the default chart layout.}
 the default chart config.}
 
 \item{max_rows}{Maximum number of rows allowed for browser-side pivoting.}
+
+\item{inclusions, exclusions}{Optional starting filters, as named lists of
+values per variable (the same format PivotTable.js uses), for example
+\code{exclusions = list(Species = "setosa")}. A value in \code{exclusions} starts
+unticked in that variable's filter box; when a variable has \code{inclusions},
+only those values start ticked. Missing values are written as
+\code{missing_label} for categorical variables and \code{"null"} otherwise. Pass the
+same lists as \code{default_inclusions} / \code{default_exclusions} to
+\code{safe_pivot_compute_from_config()} so R matches the browser before the
+widget reports its state.}
 
 \item{width}{Widget width.}
 
