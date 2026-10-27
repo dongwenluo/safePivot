@@ -750,93 +750,38 @@ HTMLWidgets.widget({
             return "Data type: " + label;
         }
 
-        function safePivotCleanAttrText(text) {
-            if (text === null || text === undefined)
-                return "";
-
-            return String(text)
-            .replace(/[\u25BE\u25B4\u25BC\u25B2\u2195\u2194\u2191\u2193]/g, " ")
-            .replace(/\s+/g, " ")
-            .trim();
-        }
-
-        function safePivotVariableNames(variableTypes) {
-            if (!variableTypes)
-                return [];
-
-            return Object.keys(variableTypes).sort(function (a, b) {
-                return b.length - a.length;
-            });
-        }
-
-        function safePivotResolveVariableName(pill, variableTypes) {
-            var names = safePivotVariableNames(variableTypes);
-
-            if (names.length === 0)
-                return null;
-
-            var text = pill
-                .clone()
-                .find(".safePivot-type-badge")
-                .remove()
-                .end()
-                .text();
-
-            text = safePivotCleanAttrText(text);
-
-            if (!text)
-                return null;
-
-            for (var i = 0; i < names.length; i++) {
-                if (text === names[i])
-                    return names[i];
-            }
-
-            for (var j = 0; j < names.length; j++) {
-                if (text.indexOf(names[j]) >= 0)
-                    return names[j];
-            }
-
-            return null;
-        }
-
         function applySafePivotTypeBadgesNow(el, x) {
             if (!x || x.show_type_badges === false || !x.variable_types)
                 return;
 
             var variableTypes = x.variable_types;
 
-            $(el)
-            .find(
-                [
-                    "table.pvtUi li.pvtAttr",
-                    "table.pvtUi td.pvtAxisContainer li",
-                    "table.pvtUi td.pvtUnused li"
-                ].join(", "))
-            .each(function () {
+            $(el).find("table.pvtUi .pvtAxisContainer li span.pvtAttr").each(function () {
                 var pill = $(this);
+                var variableName = pill.data("attrName");
 
                 pill.find(".safePivot-type-badge").remove();
 
-                var variableName = safePivotResolveVariableName(pill, variableTypes);
-
-                if (!variableName || !variableTypes[variableName])
+                if (variableName === undefined || !variableTypes[variableName])
                     return;
 
                 var info = variableTypes[variableName];
-                var type = info.type || "obj";
-                var badgeText = safePivotTypeBadgeText(type);
-                var badgeClass = safePivotTypeBadgeClass(type);
                 var titleText = safePivotTypeBadgeTitle(info);
 
                 var badge = $("<span/>")
                     .addClass("safePivot-type-badge")
-                    .addClass(badgeClass)
+                    .addClass(safePivotTypeBadgeClass(info.type || "obj"))
                     .attr("title", titleText)
                     .attr("aria-label", titleText)
-                    .text(badgeText);
+                    .text(safePivotTypeBadgeText(info.type || "obj"));
 
-                pill.append(badge);
+                var triangle = pill.children(".pvtTriangle").first();
+
+                if (triangle.length) {
+                    badge.insertBefore(triangle);
+                } else {
+                    pill.append(badge);
+                }
             });
         }
 
@@ -844,10 +789,6 @@ HTMLWidgets.widget({
             setTimeout(function () {
                 applySafePivotTypeBadgesNow(el, x);
             }, 0);
-
-            setTimeout(function () {
-                applySafePivotTypeBadgesNow(el, x);
-            }, 80);
         }
 
         /* ============================================================
@@ -1035,89 +976,32 @@ HTMLWidgets.widget({
         function applySafePivotRendererModeClass(el, rendererName) {
             var $el = $(el);
 
-            $el.removeClass("safePivot-table-mode safePivot-plotly-mode");
+            $el.removeClass("safePivot-table-mode safePivot-plotly-mode safePivot-table-renderer");
 
             if (isSafePivotPlotlyRenderer(rendererName)) {
                 $el.addClass("safePivot-plotly-mode");
             } else {
                 $el.addClass("safePivot-table-mode");
             }
+
+            // Plain table (not heatmap): hover and total shading are safe to apply.
+            if (rendererName === "Table") {
+                $el.addClass("safePivot-table-renderer");
+            }
         }
 
         function applySafePivotSizingOptions(el, x) {
             x = x || {};
 
-            var uiFontSize = getNumberOption(x.ui_font_size, 16);
-            var pillFontSize = getNumberOption(x.pill_font_size, 17);
-            var tableFontSize = getNumberOption(x.table_font_size, 18);
-            var badgeFontSize = getNumberOption(x.badge_font_size, 12);
+            var uiFontSize = getNumberOption(x.ui_font_size, 14);
+            var pillFontSize = getNumberOption(x.pill_font_size, 14);
+            var tableFontSize = getNumberOption(x.table_font_size, 15);
+            var badgeFontSize = getNumberOption(x.badge_font_size, 11);
 
             $(el).css("--safePivot-ui-font-size", uiFontSize + "px");
             $(el).css("--safePivot-pill-font-size", pillFontSize + "px");
             $(el).css("--safePivot-table-font-size", tableFontSize + "px");
             $(el).css("--safePivot-badge-font-size", badgeFontSize + "px");
-        }
-
-        function safePivotResetPanelHeights(el) {
-            var $el = $(el);
-
-            $el.find("td.pvtRows, td.pvtCols, td.pvtVals, td.pvtUnused").css({
-                minHeight: "",
-                height: ""
-            });
-        }
-
-        function safePivotSyncPanelHeights(el, rendererName) {
-            var $el = $(el);
-
-            safePivotResetPanelHeights(el);
-
-            /*
-             * Do not force the left blue row panel to match Plotly height.
-             * In chart mode the chart size should control the display, otherwise
-             * the pivot panels become unnecessarily tall and the page scrolls.
-             */
-            if (isSafePivotPlotlyRenderer(rendererName)) {
-                return;
-            }
-
-            var $rowsPanel = $el.find("td.pvtRows");
-            var $colsPanel = $el.find("td.pvtCols");
-            var $valsPanel = $el.find("td.pvtVals");
-            var $unusedPanel = $el.find("td.pvtUnused");
-            var $rendererArea = $el.find("td.pvtRendererArea, .pvtRendererArea").first();
-            var $table = $el.find("table.pvtTable").first();
-            var $plot = $el.find(".js-plotly-plot").first();
-
-            var targetHeight = 0;
-
-            if (isSafePivotPlotlyRenderer(rendererName) && $plot.length) {
-                targetHeight = $plot.outerHeight() || 0;
-            } else if ($table.length) {
-                targetHeight = $table.outerHeight() || 0;
-            } else if ($rendererArea.length) {
-                targetHeight = $rendererArea.outerHeight() || 0;
-            }
-
-            if (targetHeight <= 0)
-                return;
-
-            /* left row panel should match result area height */
-            if ($rowsPanel.length) {
-                $rowsPanel.css("min-height", targetHeight + "px");
-            }
-
-            /* top panels should at least look balanced */
-            var topTarget = Math.max(
-                    $unusedPanel.outerHeight() || 0,
-                    $colsPanel.outerHeight() || 0,
-                    $valsPanel.outerHeight() || 0);
-
-            if (topTarget > 0) {
-                $colsPanel.css("min-height", topTarget + "px");
-                $valsPanel.css("min-height", topTarget + "px");
-                $unusedPanel.css("min-height", topTarget + "px");
-            }
         }
 
         function clearSafePivotCellClasses(el) {
@@ -1143,7 +1027,9 @@ HTMLWidgets.widget({
             if (mode === "none")
                 return;
 
-            var cells = $(el).find("table.pvtTable tbody td");
+            // Data cells only: totals are on a different scale and would
+            // otherwise always be the "high" values.
+            var cells = $(el).find("table.pvtTable tbody td.pvtVal");
             var values = [];
 
             cells.each(function () {
@@ -1161,7 +1047,7 @@ HTMLWidgets.widget({
                 var v = parseCellNumber(text);
 
                 if (isEmptyRenderedCell(text)) {
-                    cell.addClass("safePivot-cell-empty safePivot-cell-missing");
+                    cell.addClass("safePivot-cell-empty");
                     return;
                 }
 
@@ -1218,18 +1104,13 @@ HTMLWidgets.widget({
             x = x || {};
 
             var $el = $(el);
-            var $rendererTd = $el.find("td.pvtRendererArea").first();
-            var $rendererArea = $el.find(".pvtRendererArea").first();
-
             var explicitWidth = Number(x.plot_width);
             var explicitHeight = Number(x.plot_height);
 
-            var availableWidth =
-                $rendererTd.innerWidth() ||
-                $rendererArea.innerWidth() ||
-                $el.innerWidth() ||
-                width ||
-                900;
+            // The renderer cell grows to fit the chart, so measure the widget
+            // and subtract the rows column next to it.
+            var rowsWidth = $el.find("td.pvtRows").first().outerWidth() || 0;
+            var availableWidth = ($el.innerWidth() || width || 900) - rowsWidth - 32;
 
             /*
             Important:
@@ -1242,14 +1123,14 @@ HTMLWidgets.widget({
 
             var finalWidth =
                 (Number.isFinite(explicitWidth) && explicitWidth > 0 ? explicitWidth : 0) ||
-            Math.min(availableWidth - 24, maxPlotWidth);
+                Math.min(availableWidth, maxPlotWidth);
 
             var finalHeight =
                 (Number.isFinite(explicitHeight) && explicitHeight > 0 ? explicitHeight : 0) ||
             defaultPlotHeight;
 
             return {
-                width: Math.max(500, Math.floor(finalWidth)),
+                width: Math.max(320, Math.floor(finalWidth)),
                 height: Math.max(minPlotHeight, Math.floor(finalHeight))
             };
         }
@@ -1476,14 +1357,7 @@ HTMLWidgets.widget({
             .append(
                 $("<div/>")
                 .addClass("safePivot-error")
-                .css({
-                    padding: "1rem",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    background: "#fff7f7",
-                    color: "#7f1d1d",
-                    fontFamily: "sans-serif"
-                })
+                .attr("role", "alert")
                 .text(message));
         }
 
@@ -1607,6 +1481,7 @@ HTMLWidgets.widget({
         return {
             renderValue: function (x) {
                 x = x || {};
+                el.safePivotX = x;
 
                 $(el).addClass("safePivot-wrapper");
                 applySafePivotSizingOptions(el, x);
@@ -1683,10 +1558,6 @@ HTMLWidgets.widget({
                         applySafePivotTypeBadges(el, x);
 
                         setTimeout(function () {
-                            safePivotSyncPanelHeights(el, currentRendererName);
-                        }, 20);
-
-                        setTimeout(function () {
                             safePivotResizePlotly(el, x);
                         }, 50);
 
@@ -1724,32 +1595,18 @@ HTMLWidgets.widget({
                 safePivotSetupResizeObserver(el, x);
 
                 setTimeout(function () {
-                    safePivotSyncPanelHeights(el, resolvedRendererName);
-                }, 20);
-
-                setTimeout(function () {
                     safePivotResizePlotly(el, x);
                 }, 80);
             },
 
-            resize: function (outputWidth, outputHeight) {
+            resize: function () {
                 /*
-                Important:
-                Do not pass outputHeight into plot_height.
-                Shiny output height is the whole widget height, not the desired Plotly
-                inner chart height.
+                The Shiny output height is the whole widget, not the chart, so it
+                is not used for the Plotly height.
                  */
-                safePivotResizePlotly(el, {
-                    plot_width: outputWidth
-                });
-
-                var rendererName = $(el).find(".pvtRenderer").val() || "Table";
-
-                if (!isSafePivotPlotlyRenderer(rendererName)) {
-                    setTimeout(function () {
-                        safePivotSyncPanelHeights(el, rendererName);
-                    }, 30);
-                }
+                // Re-measure with the user's own options (fonts, plot sizes,
+                // plotly_layout) rather than a bare object.
+                safePivotResizePlotly(el, el.safePivotX || {});
             }
         };
     }

@@ -16,6 +16,35 @@
 * The `min-height: 100%` rule now applies only to safePivot's own container,
   not to every htmlwidget on the page.
 
+## Look and layout
+
+* Rewrote `safePivot.css`: one set of colour tokens, no duplicate blocks, and
+  far fewer `!important` rules. Variables are single pills (previously a pill
+  inside a pill) with the type badge inside, drop zones are lighter, and the
+  result table has a clean header, aligned numbers, row hover, and shaded
+  totals. Filter boxes, dropdowns and sort buttons are restyled to match.
+
+* Default font sizes are smaller: `ui_font_size = 14`, `pill_font_size = 14`,
+  `table_font_size = 15`, `badge_font_size = 11` (were 16, 17, 18, 12).
+
+## Bug fixes
+
+* High/low conditional formatting now scales over data cells only. Totals were
+  included, so they were always "high" and most cells came out "low".
+
+* Type badges are computed from the original data, so Date and date-time
+  columns show `date` / `time` instead of `chr`.
+
+* Charts are sized to the space beside the rows panel, so the legend is no
+  longer clipped, and resizing keeps the chart options passed from R
+  (`plot_default_height`, font sizes, `plotly_layout`, ...).
+
+* Removed panel-height syncing code that had no effect (`min-height` does not
+  apply to table cells).
+
+* Declared `Depends: R (>= 4.1.0)` (the code uses the native pipe) and cleaned
+  up `.Rbuildignore`.
+
 # safePivot 0.1.1
 
 ## Major stability update

@@ -885,6 +885,20 @@ test_that("safePivot carries renderer, heatmap, and Plotly options to the widget
 })
 
 
+test_that("safePivot badges use the original column types", {
+  df <- data.frame(
+    d = as.Date("2024-01-01") + 0:2,
+    g = c("a", NA, "b"),
+    stringsAsFactors = FALSE
+  )
+
+  w <- safePivot(df)
+
+  expect_equal(w$x$variable_types$d$type, "date")
+  expect_equal(w$x$variable_types$g$type, "chr")
+})
+
+
 test_that("safePivot passes starting filters to the widget", {
   w <- safePivot(
     iris,

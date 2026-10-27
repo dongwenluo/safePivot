@@ -167,10 +167,10 @@ safePivot <- function(
     conditional_format_mode = "both",
     high_threshold = 0.85,
     low_threshold = 0.15,
-    ui_font_size = 16,
-    pill_font_size = 17,
-    table_font_size = 18,
-    badge_font_size = 12,
+    ui_font_size = 14,
+    pill_font_size = 14,
+    table_font_size = 15,
+    badge_font_size = 11,
     plot_default_height = 620,
     plot_min_height = 520,
     plot_max_width = 1150,
@@ -260,6 +260,10 @@ safePivot <- function(
   check_vars(names(inclusions), "inclusions")
   check_vars(names(exclusions), "exclusions")
   
+  # Types come from the original columns: preparing the data turns dates
+  # and missing categories into text.
+  variable_types <- safe_pivot_variable_types(data)
+
   data <- safe_pivot_prepare_data(
     data = data,
     missing_label = missing_label,
@@ -267,7 +271,6 @@ safePivot <- function(
   )
   
   factor_levels <- safe_pivot_factor_levels(data)
-  variable_types <- safe_pivot_variable_types(data)
   
   allowed_palettes <- c(
     "blue",
