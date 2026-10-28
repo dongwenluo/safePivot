@@ -38,6 +38,11 @@ jobs:
         shell: Rscript {0}
 
       - uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6
+        # A Codecov outage (e.g. its signing key cannot be downloaded) should
+        # not turn the whole check red: the tests above decide pass/fail.
+        # The upload stays strict (fail_ci_if_error), so an unverified
+        # uploader never runs; this step just shows as a warning instead.
+        continue-on-error: true
         with:
           # Fail if error if not on PR, or if on PR and token is given
           fail_ci_if_error: ${{ github.event_name != 'pull_request' || secrets.CODECOV_TOKEN }}
